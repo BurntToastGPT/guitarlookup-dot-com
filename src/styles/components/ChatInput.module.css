@@ -1,0 +1,66 @@
+.form {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.input {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-light-bg);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  background: white;
+  transition: border-color var(--transition-fast);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.submitButton {
+  padding: var(--space-3);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  width: 48px;
+  height: 48px;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--color-accent);
+  transform: scale(1.05);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submitButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}

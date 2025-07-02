@@ -1,103 +1,96 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import ChatMessage from "../components/chat/ChatMessage";
 import Button from "../components/common/Button";
-import { decodeSerial } from "../utils/serialDecoder";
+import { processClarification } from "../utils/serialDecoder";
 import styles from "../styles/pages/Clarification.module.css";
 
 const Clarification = () => {
   const navigate = useNavigate();
   const [guitarData, setGuitarData] = useState(null);
-  const [decodedInfo, setDecodedInfo] = useState(null);
+  const [clarificationQuestion, setClarificationQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState("");
+  const [showingResult, setShowingResult] = useState(false);
 
   useEffect(() => {
     // Get data from sessionStorage
-    const storedData = sessionStorage.getItem("guitarData");
-    if (!storedData) {
-      // If no data, redirect to home
+    const storedGuitarData = sessionStorage.getItem("guitarData");
+    const storedQuestion = sessionStorage.getItem("clarificationQuestion");
+
+    if (!storedGuitarData || !storedQuestion) {
       navigate("/");
       return;
     }
 
-    const data = JSON.parse(storedData);
-    setGuitarData(data);
-
-    // Decode the serial
-    const decoded = decodeSerial(data.brand, data.serialNumber);
-    setDecodedInfo(decoded);
-
-    // If no clarification needed, go directly to results
-    if (!decoded.needsClarification) {
-      sessionStorage.setItem("decodedResult", JSON.stringify(decoded));
-      navigate("/results");
-    }
+    setGuitarData(JSON.parse(storedGuitarData));
+    setClarificationQuestion(JSON.parse(storedQuestion));
   }, [navigate]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!selectedOption) {
-      return;
-    }
-
-    // Store the clarification answer
-    sessionStorage.setItem("clarificationAnswer", selectedOption);
-
-    // Navigate to results
-    navigate("/results");
+  const handleOptionSelect = (option) => {
+    setSelectedOption(option);
   };
 
-  if (!guitarData || !decodedInfo || !decodedInfo.needsClarification) {
-    return <div className="page-wrapper">Loading...</div>;
+  const handleSubmit = () => {
+    if (!selectedOption || !guitarData) return;
+
+    setShowingResult(true);
+
+    // Process the clarification
+    const result = processClarification(
+      guitarData.brand,
+      guitarData.serialNumber,
+      selectedOption
+    );
+
+    // Store result and navigate after a delay
+    setTimeout(() => {
+      sessionStorage.setItem("decodingResult", JSON.stringify(result));
+      navigate("/results");
+    }, 2000);
+  };
+
+  if (!clarificationQuestion || !guitarData) {
+    return null;
   }
 
   return (
     <div className="page-wrapper">
-      <div className={styles.content}>
-        <h2>We Need a Bit More Information</h2>
+      <div className={styles.chatContainer}>
+        <div className={styles.messagesArea}>
+          <ChatMessage isRandy>{clarificationQuestion.question}</ChatMessage>
 
-        <div className={styles.infoBox}>
-          <p className={styles.brand}>
-            <strong>Brand:</strong>{" "}
-            {guitarData.brand.charAt(0).toUpperCase() +
-              guitarData.brand.slice(1)}
-          </p>
-          <p className={styles.serial}>
-            <strong>Serial:</strong> {guitarData.serialNumber}
-          </p>
+          {!showingResult ? (
+            <div className={styles.optionsContainer}>
+              {clarificationQuestion.options.map((option, index) => (
+                <button
+                  key={index}
+                  className={`${styles.optionButton} ${
+                    selectedOption === option ? styles.selected : ""
+                  }`}
+                  onClick={() => handleOptionSelect(option)}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <>
+              <ChatMessage isRandy={false}>{selectedOption}</ChatMessage>
+              <ChatMessage isRandy>
+                Perfect! That helps narrow things down. Let me check my
+                database...
+              </ChatMessage>
+            </>
+          )}
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.questionSection}>
-            <h3>{decodedInfo.question}</h3>
-            <p className={styles.reason}>{decodedInfo.reason}</p>
+        {selectedOption && !showingResult && (
+          <div className={styles.actionArea}>
+            <Button onClick={handleSubmit} size="large" fullWidth>
+              Continue
+            </Button>
           </div>
-
-          <div className={styles.optionsContainer}>
-            {decodedInfo.options.map((option) => (
-              <label key={option} className={styles.optionLabel}>
-                <input
-                  type="radio"
-                  name="clarification"
-                  value={option}
-                  checked={selectedOption === option}
-                  onChange={(e) => setSelectedOption(e.target.value)}
-                  className={styles.radioInput}
-                />
-                <span className={styles.optionText}>{option}</span>
-              </label>
-            ))}
-          </div>
-
-          <Button
-            type="submit"
-            size="large"
-            fullWidth
-            disabled={!selectedOption}
-          >
-            Next
-          </Button>
-        </form>
+        )}
       </div>
     </div>
   );

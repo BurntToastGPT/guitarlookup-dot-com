@@ -1,26 +1,18 @@
 import React from "react";
-import BrandSerialForm from "../components/home/BrandSerialForm";
+import ChatContainer from "../components/chat/ChatContainer";
 import styles from "../styles/pages/Home.module.css";
 
 const Home = () => {
   return (
     <div className="page-wrapper">
       <div className={styles.hero}>
-        <h2 className={styles.title}>Decode Your Guitar's History</h2>
+        <h1 className={styles.title}>Meet Randy, Your Guitar Expert</h1>
         <p className={styles.subtitle}>
-          Enter your guitar's brand and serial number below to discover its
-          manufacturing year, model information, and origin.
+          Let's discover your guitar's story together
         </p>
       </div>
 
-      <BrandSerialForm />
-
-      <div className={styles.footer}>
-        <p className={styles.supportText}>
-          Currently supporting major brands including Fender, Gibson, Martin,
-          Taylor, and more.
-        </p>
-      </div>
+      <ChatContainer />
     </div>
   );
 };

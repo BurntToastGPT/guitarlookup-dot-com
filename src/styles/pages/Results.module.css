@@ -1,189 +1,141 @@
-.content {
-  max-width: 700px;
+.chatContainer {
+  max-width: 800px;
   margin: 0 auto;
+  background: var(--color-light-bg);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  min-height: 500px;
 }
 
-.content h2 {
-  text-align: center;
-  color: var(--color-text-light);
-  margin-bottom: var(--space-8);
-  font-size: var(--font-size-3xl);
+.messagesArea {
+  padding: var(--space-6);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.9),
+    rgba(247, 232, 253, 0.3)
+  );
+  min-height: 400px;
 }
 
-.guitarInfo {
-  background-color: rgba(247, 232, 253, 0.05);
-  border: 1px solid rgba(247, 232, 253, 0.1);
+.resultsCard {
+  background: white;
   border-radius: var(--radius-lg);
   padding: var(--space-6);
-  margin-bottom: var(--space-8);
+  margin-top: var(--space-4);
+  box-shadow: var(--shadow-md);
 }
 
-.infoRow {
+.resultsTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-dark);
+  margin-bottom: var(--space-4);
+}
+
+.resultItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-2) 0;
-  font-size: var(--font-size-lg);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.resultItem:last-of-type {
+  border-bottom: none;
 }
 
 .label {
   font-weight: var(--font-weight-medium);
-  color: var(--color-primary);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .value {
-  color: var(--color-text-light);
   font-weight: var(--font-weight-medium);
+  color: var(--color-text-dark);
 }
 
-.resultsCard {
-  background: rgba(247, 232, 253, 0.05);
-  border: 2px solid var(--color-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--space-8);
-  margin-bottom: var(--space-8);
+.value.high {
+  color: #059669;
 }
 
-.resultSection {
-  margin-bottom: var(--space-8);
-  padding-bottom: var(--space-6);
-  border-bottom: 1px solid rgba(247, 232, 253, 0.1);
-}
-
-.resultSection:last-child {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-}
-
-.resultSection h3 {
-  font-size: var(--font-size-lg);
+.value.medium {
   color: var(--color-primary);
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-weight-medium);
 }
 
-.resultValue {
-  font-size: var(--font-size-2xl);
-  color: var(--color-text-light);
-  font-weight: var(--font-weight-bold);
-  margin: 0;
-}
-
-.confidenceSection {
-  text-align: center;
-  padding-top: var(--space-6);
-}
-
-.confidenceSection h3 {
-  font-size: var(--font-size-lg);
-  color: var(--color-primary);
-  margin-bottom: var(--space-4);
-  font-weight: var(--font-weight-medium);
-}
-
-.confidenceBadge {
-  display: inline-block;
-  padding: var(--space-3) var(--space-8);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.confidenceHigh {
-  background-color: rgba(56, 138, 214, 0.2);
-  color: var(--color-secondary);
-  border: 2px solid var(--color-secondary);
-}
-
-.confidenceMedium {
-  background-color: rgba(255, 119, 51, 0.2);
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
-}
-
-.confidenceLow {
-  background-color: rgba(239, 35, 60, 0.2);
+.value.low {
   color: var(--color-accent);
-  border: 2px solid var(--color-accent);
 }
 
-.howWeKnowSection {
-  background-color: rgba(56, 138, 214, 0.1);
-  border: 1px solid rgba(56, 138, 214, 0.3);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-8);
+.ruleSection {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.howWeKnowSection h3 {
-  font-size: var(--font-size-xl);
-  color: var(--color-secondary);
-  margin-bottom: var(--space-3);
+.ruleLabel {
   font-weight: var(--font-weight-bold);
+  color: var(--color-text-dark);
+  margin-bottom: var(--space-2);
 }
 
-.howWeKnowSection p {
-  color: var(--color-text-light);
+.ruleText {
+  color: var(--color-text-muted);
   line-height: 1.6;
+}
+
+.uncertaintyNote {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  background: rgba(255, 119, 51, 0.1);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.uncertaintyNote p {
   margin: 0;
-  opacity: 0.9;
+  color: var(--color-text-dark);
 }
 
-.ambiguousNote {
-  background-color: rgba(255, 119, 51, 0.1);
-  border: 1px solid rgba(255, 119, 51, 0.3);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-8);
-}
-
-.ambiguousNote p {
-  color: var(--color-text-light);
-  line-height: 1.6;
-  margin: 0;
-}
-
-.ambiguousNote strong {
-  color: var(--color-primary);
-}
-
-.actions {
+.actionArea {
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  background: white;
+  border-top: 1px solid rgba(34, 40, 58, 0.1);
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  margin-top: var(--space-8);
+  gap: var(--space-3);
+  align-items: center;
 }
 
-/* Mobile styles */
-@media (max-width: 768px) {
-  .content h2 {
-    font-size: var(--font-size-2xl);
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .chatContainer {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .messagesArea {
+    padding: var(--space-4);
   }
 
   .resultsCard {
-    padding: var(--space-6);
+    padding: var(--space-4);
   }
 
-  .resultValue {
-    font-size: var(--font-size-xl);
+  .resultsTitle {
+    font-size: var(--font-size-lg);
   }
 
-  .confidenceBadge {
-    font-size: var(--font-size-base);
-    padding: var(--space-2) var(--space-6);
-  }
-
-  .infoRow {
+  .resultItem {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-1);
   }
 
-  .howWeKnowSection,
-  .ambiguousNote {
-    padding: var(--space-4);
+  .actionArea {
+    padding: var(--space-3) var(--space-4) var(--space-4);
   }
 }

@@ -1,48 +1,83 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ChatMessage from "../components/chat/ChatMessage";
 import Button from "../components/common/Button";
 import styles from "../styles/pages/ThankYou.module.css";
 
 const ThankYou = () => {
   const navigate = useNavigate();
+  const [feedbackType, setFeedbackType] = useState("");
+
+  useEffect(() => {
+    // Get feedback type from sessionStorage
+    const storedFeedbackType = sessionStorage.getItem("feedbackType");
+    if (storedFeedbackType) {
+      setFeedbackType(storedFeedbackType);
+    }
+  }, []);
+
+  const handleNewSearch = () => {
+    sessionStorage.clear();
+    navigate("/");
+  };
+
+  const getRandyMessage = () => {
+    switch (feedbackType) {
+      case "positive":
+        return "Thanks so much! Happy to be your guitar guide anytime. Rock on! 🎸✨";
+      case "mixed":
+        return "Thanks for taking the time! Every bit of feedback helps me become a better guitar assistant. See you next time! 🎸";
+      case "negative":
+        return "Thank you for your honesty - it really helps me improve. Hope to do better next time you need guitar help! 🎸";
+      default:
+        return "Thanks for using GuitarLookup! Come back anytime you need help with a guitar serial number. Keep playing! 🎸";
+    }
+  };
 
   return (
     <div className="page-wrapper">
-      <div className={styles.content}>
-        <div className={styles.iconContainer}>
-          <svg
-            width="80"
-            height="80"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={styles.checkIcon}
-          >
-            <path
-              d="M20 6L9 17L4 12"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+      <div className={styles.chatContainer}>
+        <div className={styles.messagesArea}>
+          <ChatMessage isRandy>{getRandyMessage()}</ChatMessage>
+
+          <div className={styles.finalMessage}>
+            <h2>Until Next Time!</h2>
+            <p>
+              Got another guitar to look up? I'm always here to help decode
+              those mysterious serial numbers.
+            </p>
+          </div>
         </div>
 
-        <h2 className={styles.title}>Thank You!</h2>
-        <p className={styles.message}>
-          Your feedback helps us improve our guitar serial number database.
-        </p>
+        <div className={styles.actionArea}>
+          <Button onClick={handleNewSearch} size="large" fullWidth>
+            Look Up Another Guitar
+          </Button>
 
-        <div className={styles.stats}>
-          <p className={styles.statText}>
-            You've helped make our database more accurate for thousands of
-            guitar enthusiasts!
-          </p>
+          <div className={styles.socialLinks}>
+            <p>Share GuitarLookup with fellow musicians:</p>
+            <div className={styles.shareButtons}>
+              <button
+                className={styles.shareButton}
+                aria-label="Share on Twitter"
+              >
+                🐦
+              </button>
+              <button
+                className={styles.shareButton}
+                aria-label="Share on Facebook"
+              >
+                📘
+              </button>
+              <button
+                className={styles.shareButton}
+                aria-label="Share via Email"
+              >
+                ✉️
+              </button>
+            </div>
+          </div>
         </div>
-
-        <Button onClick={() => navigate("/")} size="large" fullWidth>
-          Look Up Another Guitar
-        </Button>
       </div>
     </div>
   );

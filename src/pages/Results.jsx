@@ -1,157 +1,172 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import ChatMessage from "../components/chat/ChatMessage";
 import Button from "../components/common/Button";
-import { decodeSerial, processClarification } from "../utils/serialDecoder";
+import brandsData from "../data/brands.json";
 import styles from "../styles/pages/Results.module.css";
 
 const Results = () => {
   const navigate = useNavigate();
   const [guitarData, setGuitarData] = useState(null);
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [decodingResult, setDecodingResult] = useState(null);
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    // Get guitar data from sessionStorage
-    const storedData = sessionStorage.getItem("guitarData");
-    if (!storedData) {
+    // Get data from sessionStorage
+    const storedGuitarData = sessionStorage.getItem("guitarData");
+    const storedResult = sessionStorage.getItem("decodingResult");
+
+    if (!storedGuitarData || !storedResult) {
       navigate("/");
       return;
     }
 
-    const data = JSON.parse(storedData);
-    setGuitarData(data);
+    const guitar = JSON.parse(storedGuitarData);
+    const result = JSON.parse(storedResult);
 
-    // Check if we have a direct result or need to process clarification
-    const storedResult = sessionStorage.getItem("decodedResult");
-    const clarificationAnswer = sessionStorage.getItem("clarificationAnswer");
+    setGuitarData(guitar);
+    setDecodingResult(result);
 
-    let finalResult;
+    // Build Randy's messages
+    const brandName =
+      brandsData.brands.find((b) => b.id === guitar.brand)?.displayName ||
+      guitar.brand;
 
-    if (storedResult) {
-      // Direct result without clarification
-      finalResult = JSON.parse(storedResult);
-    } else if (clarificationAnswer) {
-      // Process with clarification answer
-      finalResult = processClarification(
-        data.brand,
-        data.serialNumber,
-        clarificationAnswer
-      );
+    const initialMessages = [];
+
+    if (result.confidence === "High") {
+      initialMessages.push({
+        id: 1,
+        isRandy: true,
+        message: `Great news! I found detailed information about your ${brandName}.`,
+      });
+    } else if (result.confidence === "Medium") {
+      initialMessages.push({
+        id: 1,
+        isRandy: true,
+        message: `I've found some information about your ${brandName}, though there's a bit of uncertainty due to the serial number format.`,
+      });
     } else {
-      // Fallback: decode again
-      finalResult = decodeSerial(data.brand, data.serialNumber);
+      initialMessages.push({
+        id: 1,
+        isRandy: true,
+        message: `I found some basic information about your ${brandName}, but the serial number format is unusual, so I'm less certain about the details.`,
+      });
     }
 
-    setResults(finalResult);
-    setLoading(false);
+    setMessages(initialMessages);
 
-    // Store result for feedback page
-    sessionStorage.setItem("finalResult", JSON.stringify(finalResult));
+    // Add result details after a delay
+    setTimeout(() => {
+      const detailsMessage = {
+        id: 2,
+        isRandy: true,
+        showResults: true,
+      };
+      setMessages((prev) => [...prev, detailsMessage]);
+    }, 1200);
   }, [navigate]);
 
   const handleFeedback = () => {
     navigate("/feedback");
   };
 
-  if (loading || !guitarData || !results) {
-    return <div className="page-wrapper">Loading results...</div>;
-  }
-
-  // Determine confidence badge color
-  const getConfidenceBadgeClass = (confidence) => {
-    switch (confidence) {
-      case "High":
-        return styles.confidenceHigh;
-      case "Medium":
-        return styles.confidenceMedium;
-      case "Low":
-      default:
-        return styles.confidenceLow;
-    }
+  const handleNewSearch = () => {
+    sessionStorage.clear();
+    navigate("/");
   };
 
-  // Format brand name
-  const brandDisplay =
-    guitarData.brand.charAt(0).toUpperCase() + guitarData.brand.slice(1);
+  if (!guitarData || !decodingResult) {
+    return null;
+  }
+
+  const brandName =
+    brandsData.brands.find((b) => b.id === guitarData.brand)?.displayName ||
+    guitarData.brand;
 
   return (
     <div className="page-wrapper">
-      <div className={styles.content}>
-        <h2>Your Guitar Information</h2>
+      <div className={styles.chatContainer}>
+        <div className={styles.messagesArea}>
+          {messages.map((msg) => (
+            <ChatMessage key={msg.id} isRandy={msg.isRandy}>
+              {msg.message}
+              {msg.showResults && (
+                <div className={styles.resultsCard}>
+                  <h3 className={styles.resultsTitle}>
+                    Your {brandName} Details:
+                  </h3>
 
-        <div className={styles.guitarInfo}>
-          <div className={styles.infoRow}>
-            <span className={styles.label}>Brand:</span>
-            <span className={styles.value}>{brandDisplay}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.label}>Serial Number:</span>
-            <span className={styles.value}>{guitarData.serialNumber}</span>
-          </div>
+                  <div className={styles.resultItem}>
+                    <span className={styles.label}>📅 Year(s):</span>
+                    <span className={styles.value}>
+                      {Array.isArray(decodingResult.years)
+                        ? decodingResult.years.join(" - ")
+                        : decodingResult.years}
+                    </span>
+                  </div>
+
+                  {decodingResult.country &&
+                    decodingResult.country !== "Unknown" && (
+                      <div className={styles.resultItem}>
+                        <span className={styles.label}>🌍 Country:</span>
+                        <span className={styles.value}>
+                          {decodingResult.country}
+                        </span>
+                      </div>
+                    )}
+
+                  {decodingResult.model && (
+                    <div className={styles.resultItem}>
+                      <span className={styles.label}>🎸 Model:</span>
+                      <span className={styles.value}>
+                        {decodingResult.model}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className={styles.resultItem}>
+                    <span className={styles.label}>🎯 Confidence:</span>
+                    <span
+                      className={`${styles.value} ${
+                        styles[decodingResult.confidence.toLowerCase()]
+                      }`}
+                    >
+                      {decodingResult.confidence}
+                    </span>
+                  </div>
+
+                  <div className={styles.ruleSection}>
+                    <p className={styles.ruleLabel}>How I figured this out:</p>
+                    <p className={styles.ruleText}>{decodingResult.rule}</p>
+                  </div>
+
+                  {decodingResult.confidence !== "High" && (
+                    <div className={styles.uncertaintyNote}>
+                      <p>
+                        💡 <strong>Note:</strong> Serial number dating can be
+                        complex. For the most accurate information, I'd
+                        recommend contacting {brandName} directly or consulting
+                        with a vintage guitar expert.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </ChatMessage>
+          ))}
         </div>
 
-        <div className={styles.resultsCard}>
-          <div className={styles.resultSection}>
-            <h3>Manufacturing Year</h3>
-            <p className={styles.resultValue}>
-              {results.years ? results.years.join(" or ") : "Unknown"}
-            </p>
-          </div>
-
-          <div className={styles.resultSection}>
-            <h3>Model</h3>
-            <p className={styles.resultValue}>
-              {results.model ||
-                "Unable to determine specific model from serial number"}
-            </p>
-          </div>
-
-          <div className={styles.resultSection}>
-            <h3>Country/Factory</h3>
-            <p className={styles.resultValue}>{results.country || "Unknown"}</p>
-          </div>
-
-          <div className={styles.confidenceSection}>
-            <h3>Confidence Score</h3>
-            <span
-              className={`${styles.confidenceBadge} ${getConfidenceBadgeClass(
-                results.confidence
-              )}`}
-            >
-              {results.confidence || "Low"}
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.howWeKnowSection}>
-          <h3>How We Know</h3>
-          <p>
-            {results.rule ||
-              "Based on general serial number patterns for this brand."}
-          </p>
-        </div>
-
-        {results.confidence === "Low" && (
-          <div className={styles.ambiguousNote}>
-            <p>
-              <strong>Note:</strong> This serial number format is ambiguous.
-              Additional information such as model name, features, or photos
-              would help narrow down the exact year and model.
-            </p>
-          </div>
-        )}
-
-        <div className={styles.actions}>
-          <Button onClick={handleFeedback} size="large" fullWidth>
-            Was This Information Helpful?
-          </Button>
-
+        <div className={styles.actionArea}>
           <Button
-            onClick={() => navigate("/")}
-            variant="secondary"
-            size="medium"
+            onClick={handleFeedback}
+            variant="primary"
+            size="large"
             fullWidth
           >
+            Help Randy Improve
+          </Button>
+          <Button onClick={handleNewSearch} variant="secondary" size="medium">
             Look Up Another Guitar
           </Button>
         </div>
