@@ -7,9 +7,8 @@ const Header = () => {
     <header className={styles.header}>
       <div className="container">
         <Link to="/" className={styles.logo}>
-          <h1>GuitarLookup</h1>
+          <h1 className={styles.logoText}>GuitarLookup</h1>
         </Link>
-        <p className={styles.tagline}>Decode your guitar's serial number</p>
       </div>
     </header>
   );

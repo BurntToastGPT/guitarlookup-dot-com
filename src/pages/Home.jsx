@@ -1,12 +1,13 @@
 import React from "react";
 import BrandSerialForm from "../components/home/BrandSerialForm";
+import styles from "../styles/pages/Home.module.css";
 
 const Home = () => {
   return (
     <div className="page-wrapper">
-      <div className="text-center mb-4">
-        <h2>Decode Your Guitar's History</h2>
-        <p>
+      <div className={styles.hero}>
+        <h2 className={styles.title}>Decode Your Guitar's History</h2>
+        <p className={styles.subtitle}>
           Enter your guitar's brand and serial number below to discover its
           manufacturing year, model information, and origin.
         </p>
@@ -14,8 +15,8 @@ const Home = () => {
 
       <BrandSerialForm />
 
-      <div className="text-center mt-4">
-        <p style={{ fontSize: "0.875rem", color: "#666" }}>
+      <div className={styles.footer}>
+        <p className={styles.supportText}>
           Currently supporting major brands including Fender, Gibson, Martin,
           Taylor, and more.
         </p>

@@ -3,58 +3,26 @@
   margin: 0 auto;
 }
 
-.content h2 {
+.title {
   text-align: center;
   color: var(--color-text-light);
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-4);
   font-size: var(--font-size-3xl);
 }
 
-.infoBox {
-  background-color: rgba(247, 232, 253, 0.05);
-  border: 1px solid rgba(247, 232, 253, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-8);
-}
-
-.brand,
-.serial {
-  margin: var(--space-2) 0;
+.subtitle {
+  text-align: center;
   font-size: var(--font-size-lg);
   color: var(--color-text-light);
-}
-
-.brand strong,
-.serial strong {
-  color: var(--color-primary);
-  margin-right: var(--space-2);
+  opacity: 0.8;
+  margin-bottom: var(--space-10);
 }
 
 .form {
   margin-top: var(--space-8);
 }
 
-.questionSection {
-  margin-bottom: var(--space-8);
-  text-align: center;
-}
-
-.questionSection h3 {
-  font-size: var(--font-size-2xl);
-  color: var(--color-text-light);
-  margin-bottom: var(--space-3);
-  font-weight: var(--font-weight-bold);
-}
-
-.reason {
-  font-size: var(--font-size-base);
-  color: var(--color-text-light);
-  opacity: 0.7;
-  font-style: italic;
-}
-
-.optionsContainer {
+.feedbackOptions {
   margin-bottom: var(--space-8);
   display: flex;
   flex-direction: column;
@@ -94,20 +62,67 @@
 .optionText {
   flex: 1;
   color: var(--color-text-light);
+  font-size: var(--font-size-lg);
+}
+
+.commentSection {
+  margin-bottom: var(--space-8);
+}
+
+.commentLabel {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-light);
+  font-size: var(--font-size-lg);
+}
+
+.commentTextarea {
+  width: 100%;
+  padding: var(--space-4);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  color: var(--color-text-dark);
+  background-color: var(--color-light-bg);
+  border: none;
+  border-radius: var(--radius-lg);
+  resize: vertical;
+  font-family: var(--font-family);
+  transition: box-shadow var(--transition-base);
+}
+
+.commentTextarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 119, 51, 0.2);
+}
+
+.commentTextarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 /* Mobile styles */
 @media (max-width: 768px) {
-  .content h2 {
+  .title {
     font-size: var(--font-size-2xl);
   }
 
-  .questionSection h3 {
-    font-size: var(--font-size-xl);
+  .subtitle {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--space-8);
   }
 
   .optionLabel {
     padding: var(--space-4);
+  }
+
+  .optionText {
     font-size: var(--font-size-base);
   }
 }

@@ -1,19 +1,21 @@
 .footer {
-  background-color: #f8f8f8;
-  border-top: 1px solid #e0e0e0;
-  padding: 2rem 0;
+  background-color: var(--color-dark-bg);
+  border-top: 1px solid rgba(247, 232, 253, 0.1);
+  padding: var(--space-8) 0;
   margin-top: auto;
   text-align: center;
-  color: #666;
-  font-size: 0.875rem;
 }
 
-.footer p {
-  margin: 0.25rem 0;
+.footerText {
+  color: var(--color-text-light);
+  font-size: var(--font-size-base);
+  margin: 0 0 var(--space-2) 0;
 }
 
 .disclaimer {
-  font-size: 0.75rem;
-  color: #888;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  opacity: 0.6;
   font-style: italic;
+  margin: 0;
 }

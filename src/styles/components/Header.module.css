@@ -1,40 +1,32 @@
 .header {
-  background-color: #1a1a1a;
-  color: white;
-  padding: 1.5rem 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-dark-bg);
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid rgba(247, 232, 253, 0.1);
 }
 
 .logo {
   display: inline-block;
-  color: white;
   text-decoration: none;
 }
 
-.logo h1 {
-  font-size: 2rem;
+.logoText {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-light);
   margin: 0;
-  color: white;
-  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.logo:hover {
-  text-decoration: none;
+.logo:hover .logoText {
   opacity: 0.9;
-}
-
-.tagline {
-  font-size: 0.875rem;
-  color: #cccccc;
-  margin: 0.25rem 0 0 0;
 }
 
 @media (max-width: 768px) {
   .header {
-    padding: 1rem 0;
+    padding: var(--space-4) 0;
   }
 
-  .logo h1 {
-    font-size: 1.5rem;
+  .logoText {
+    font-size: var(--font-size-3xl);
   }
 }
