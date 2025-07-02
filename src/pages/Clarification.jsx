@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ChatMessage from "../components/chat/ChatMessage";
 import Button from "../components/common/Button";
-import { processClarification } from "../utils/serialDecoder";
+import {
+  processClarification,
+  decodeGibsonSerial,
+} from "../utils/serialDecoder";
 import styles from "../styles/pages/Clarification.module.css";
 
 const Clarification = () => {
@@ -11,19 +14,36 @@ const Clarification = () => {
   const [clarificationQuestion, setClarificationQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState("");
   const [showingResult, setShowingResult] = useState(false);
+  const [allAnswers, setAllAnswers] = useState([]);
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     // Get data from sessionStorage
     const storedGuitarData = sessionStorage.getItem("guitarData");
     const storedQuestion = sessionStorage.getItem("clarificationQuestion");
+    const storedAnswers = sessionStorage.getItem("clarificationAnswers");
 
     if (!storedGuitarData || !storedQuestion) {
       navigate("/");
       return;
     }
 
-    setGuitarData(JSON.parse(storedGuitarData));
-    setClarificationQuestion(JSON.parse(storedQuestion));
+    const parsedGuitarData = JSON.parse(storedGuitarData);
+    const parsedQuestion = JSON.parse(storedQuestion);
+    const parsedAnswers = storedAnswers ? JSON.parse(storedAnswers) : [];
+
+    setGuitarData(parsedGuitarData);
+    setClarificationQuestion(parsedQuestion);
+    setAllAnswers(parsedAnswers);
+
+    // Initialize messages with the question
+    setMessages([
+      {
+        id: Date.now(),
+        isRandy: true,
+        text: parsedQuestion.question,
+      },
+    ]);
   }, [navigate]);
 
   const handleOptionSelect = (option) => {
@@ -33,20 +53,108 @@ const Clarification = () => {
   const handleSubmit = () => {
     if (!selectedOption || !guitarData) return;
 
+    // Add user's answer to messages
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        isRandy: false,
+        text: selectedOption,
+      },
+    ]);
+
     setShowingResult(true);
 
-    // Process the clarification
-    const result = processClarification(
-      guitarData.brand,
-      guitarData.serialNumber,
-      selectedOption
+    // Update all answers
+    const updatedAnswers = [...allAnswers, selectedOption];
+    setAllAnswers(updatedAnswers);
+    sessionStorage.setItem(
+      "clarificationAnswers",
+      JSON.stringify(updatedAnswers)
     );
 
-    // Store result and navigate after a delay
-    setTimeout(() => {
-      sessionStorage.setItem("decodingResult", JSON.stringify(result));
-      navigate("/results");
-    }, 2000);
+    // For Gibson, check if we need more clarifications
+    if (
+      guitarData.brand === "gibson" &&
+      clarificationQuestion.previousAnswers !== undefined
+    ) {
+      // Process with Gibson rules, continuing from the same rule
+      const result = decodeGibsonSerial(
+        guitarData.serialNumber,
+        updatedAnswers,
+        clarificationQuestion.ruleIndex
+      );
+
+      setTimeout(() => {
+        if (result.needsClarification) {
+          // Need another clarification
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 1,
+              isRandy: true,
+              text: "Thanks! I have another quick question...",
+            },
+          ]);
+
+          setTimeout(() => {
+            sessionStorage.setItem(
+              "clarificationQuestion",
+              JSON.stringify(result)
+            );
+            setClarificationQuestion(result);
+            setSelectedOption("");
+            setShowingResult(false);
+
+            // Add the new question
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: Date.now() + 2,
+                isRandy: true,
+                text: result.question,
+              },
+            ]);
+          }, 1500);
+        } else {
+          // Got final result
+          sessionStorage.setItem("decodingResult", JSON.stringify(result));
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 1,
+              isRandy: true,
+              text: "Perfect! That helps narrow things down. Let me check my database...",
+            },
+          ]);
+
+          setTimeout(() => {
+            navigate("/results");
+          }, 2000);
+        }
+      }, 1500);
+    } else {
+      // Non-Gibson or old flow
+      const result = processClarification(
+        guitarData.brand,
+        guitarData.serialNumber,
+        selectedOption
+      );
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          isRandy: true,
+          text: "Perfect! That helps narrow things down. Let me check my database...",
+        },
+      ]);
+
+      setTimeout(() => {
+        sessionStorage.setItem("decodingResult", JSON.stringify(result));
+        navigate("/results");
+      }, 2000);
+    }
   };
 
   if (!clarificationQuestion || !guitarData) {
@@ -57,11 +165,15 @@ const Clarification = () => {
     <div className="page-wrapper">
       <div className={styles.chatContainer}>
         <div className={styles.messagesArea}>
-          <ChatMessage isRandy>{clarificationQuestion.question}</ChatMessage>
+          {messages.map((msg) => (
+            <ChatMessage key={msg.id} isRandy={msg.isRandy}>
+              {msg.text}
+            </ChatMessage>
+          ))}
 
-          {!showingResult ? (
+          {clarificationQuestion && !showingResult && (
             <div className={styles.optionsContainer}>
-              {clarificationQuestion.options.map((option, index) => (
+              {(clarificationQuestion.options || []).map((option, index) => (
                 <button
                   key={index}
                   className={`${styles.optionButton} ${
@@ -73,14 +185,6 @@ const Clarification = () => {
                 </button>
               ))}
             </div>
-          ) : (
-            <>
-              <ChatMessage isRandy={false}>{selectedOption}</ChatMessage>
-              <ChatMessage isRandy>
-                Perfect! That helps narrow things down. Let me check my
-                database...
-              </ChatMessage>
-            </>
           )}
         </div>
 

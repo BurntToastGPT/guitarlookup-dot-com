@@ -1,5 +1,40 @@
-// Basic serial number decoder logic for major guitar brands
-// This is simplified for MVP - real implementations would be more complex
+// Serial number decoder logic for major guitar brands
+import gibsonRules from "../data/gibson_serial_rules.json";
+
+// Helper function to replace [serial_number] placeholder in text
+const replacePlaceholder = (text, serial) => {
+  if (!text) return text;
+  return text.replace(/\[serial_number\]/g, serial);
+};
+
+// Helper function to extract year info from rule answers
+const extractYearFromAnswer = (answer, serial) => {
+  if (!answer) return null;
+
+  // Look for patterns like [year], [YY], [YYYY], etc.
+  const yearPatterns = [
+    /20\[YY\]/g,
+    /19\[YY\]/g,
+    /19\[MM\]/g,
+    /\[year\]/g,
+    /\[YYYY\]/g,
+  ];
+
+  let processedAnswer = answer;
+
+  // Extract actual year values from serial if possible
+  if (serial.length === 8 && /^\d{8}$/.test(serial)) {
+    const yearDigit = serial[0];
+    const decade = yearDigit >= "7" ? "197" : "198";
+    processedAnswer = processedAnswer.replace(/\[year\]/g, decade + yearDigit);
+  } else if (serial.length === 9 && /^\d{9}$/.test(serial)) {
+    const yearCode = serial.substring(0, 2);
+    const year = 2000 + parseInt(yearCode);
+    processedAnswer = processedAnswer.replace(/\[year\]/g, year.toString());
+  }
+
+  return processedAnswer;
+};
 
 export const decodeFenderSerial = (serial) => {
   const upperSerial = serial.toUpperCase();
@@ -49,37 +84,275 @@ export const decodeFenderSerial = (serial) => {
   };
 };
 
-export const decodeGibsonSerial = (serial) => {
+export const decodeGibsonSerial = (
+  serial,
+  previousAnswers = [],
+  continueFromRuleIndex = -1
+) => {
   const upperSerial = serial.toUpperCase();
+  const rules = gibsonRules.gibson;
 
-  // Modern Gibson serials: YY DDD Y PPP
-  if (serial.length === 9 && /^\d{9}$/.test(serial)) {
-    const yearCode = serial.substring(0, 2);
-    const year = 2000 + parseInt(yearCode);
-    return {
-      years: [year.toString()],
-      country: "USA",
-      confidence: "High",
-      rule: "9-digit format: first 2 digits indicate year after 2000",
-    };
+  // If we have a rule index to continue from, start there
+  let startIndex = continueFromRuleIndex >= 0 ? continueFromRuleIndex : 0;
+
+  // Try to match serial against each rule
+  for (let i = startIndex; i < rules.length; i++) {
+    const rule = rules[i];
+    let isMatch = false;
+
+    // If continuing from a rule, we already matched it
+    if (i === continueFromRuleIndex) {
+      isMatch = true;
+    } else {
+      // Pattern matching logic based on pattern_description
+      if (rule.pattern_description.includes("Pre-1952 Factory Order Numbers")) {
+        // Complex FON patterns - simplified check
+        isMatch =
+          serial.length <= 5 ||
+          (serial.length <= 10 && /[A-Z]/.test(upperSerial));
+      } else if (
+        rule.pattern_description.includes("5 or 6-digit number (inked")
+      ) {
+        isMatch = /^\d{5,6}$/.test(serial);
+      } else if (
+        rule.pattern_description.includes("6-digit number (impressed)")
+      ) {
+        isMatch = /^\d{6}$/.test(serial);
+      } else if (rule.pattern_description.includes("8-digit decal/sticker")) {
+        isMatch =
+          /^\d{8}$/.test(serial) &&
+          (serial.startsWith("99") ||
+            serial.startsWith("00") ||
+            serial.startsWith("06"));
+      } else if (
+        rule.pattern_description.includes("8-digit number (impressed)")
+      ) {
+        isMatch =
+          /^\d{8}$/.test(serial) &&
+          !serial.startsWith("94") &&
+          !serial.startsWith("99") &&
+          !serial.startsWith("00") &&
+          !serial.startsWith("06");
+      } else if (
+        rule.pattern_description.includes("9-digit number (impressed)")
+      ) {
+        isMatch = /^\d{9}$/.test(serial);
+      } else if (
+        rule.pattern_description.includes(
+          "9-digit number (starts with model year)"
+        )
+      ) {
+        isMatch =
+          /^\d{9}$/.test(serial) &&
+          parseInt(serial.substring(0, 2)) >= 14 &&
+          parseInt(serial.substring(0, 2)) <= 19;
+      } else if (
+        rule.pattern_description.includes("8-digit number (starts with '94')")
+      ) {
+        isMatch = serial.startsWith("94") && /^\d{8}$/.test(serial);
+      } else if (rule.pattern_description.includes("Ink-Stamped number")) {
+        isMatch =
+          /^[A-Z]?\s?\d{4,5}$/.test(upperSerial) ||
+          /^\d{1,2}\s\d{4}$/.test(serial);
+      } else if (rule.pattern_description.includes("Starts with 'CS'")) {
+        isMatch = upperSerial.startsWith("CS");
+      } else if (rule.pattern_description.includes("Custom Shop Reissue")) {
+        isMatch =
+          /^[A-Z]\s?\d{4}/.test(upperSerial) ||
+          /^\d{1,2}\s?\d{4}[A-Z]?$/.test(serial);
+      }
+    }
+
+    if (isMatch) {
+      // Check if we need clarification
+      if (rule.clarifying_questions && rule.clarifying_questions.length > 0) {
+        // Find which question to ask based on previous answers
+        const questionIndex = previousAnswers.length;
+        if (questionIndex < rule.clarifying_questions.length) {
+          const question = rule.clarifying_questions[questionIndex];
+
+          // Generate appropriate options based on the question
+          let options = ["Yes", "No"]; // Default
+
+          if (question.question.includes("1950s or 1960s")) {
+            options = ["1950s features", "1960s features", "Not sure"];
+          } else if (question.question.includes("MADE IN USA")) {
+            options = [
+              "Yes, it has 'MADE IN USA' and/or a volute",
+              "No, it doesn't have these features",
+              "Not sure",
+            ];
+          } else if (question.question.includes("impressed into the back")) {
+            options = [
+              "Yes, impressed with 'MADE IN USA'",
+              "No, it's ink-stamped",
+              "Not sure",
+            ];
+          } else if (question.question.includes("acoustic or an electric")) {
+            options = ["Acoustic", "Electric"];
+          } else if (
+            question.question.includes("first digit alone") ||
+            question.question.includes("first two digits")
+          ) {
+            options = [
+              "First digit only (e.g., '8' for 2008)",
+              "First two digits (e.g., '19' for 2019)",
+            ];
+          } else if (question.question.includes("Centennial")) {
+            options = [
+              "Yes, it has Centennial/100th Anniversary markings",
+              "No special markings",
+            ];
+          } else if (
+            question.question.includes("Classic") ||
+            question.question.includes("Reissue")
+          ) {
+            options = [
+              "Les Paul Classic",
+              "Historic Reissue (e.g., '60 Les Paul')",
+              "Other model",
+            ];
+          } else if (question.question.includes("199[Y], 200[Y], or 201[Y]")) {
+            options = [
+              "1990s (199X)",
+              "2000s (200X)",
+              "2010s (201X)",
+              "2020s (202X)",
+            ];
+          }
+
+          return {
+            needsClarification: true,
+            question: replacePlaceholder(question.question, serial),
+            options: options,
+            reason: question.purpose,
+            ruleIndex: i,
+            previousAnswers: previousAnswers,
+          };
+        }
+      }
+
+      // We have an answer or need to generate one
+      let answer = rule.answer ? replacePlaceholder(rule.answer, serial) : null;
+      let years = [rule.years];
+
+      // Special handling for specific patterns
+      if (rule.pattern_description.includes("8-digit decal/sticker")) {
+        const yearCode = serial.substring(0, 2);
+        if (yearCode === "99") years = ["1975"];
+        else if (yearCode === "00") years = ["1976"];
+        else if (yearCode === "06") years = ["1977"];
+        if (answer) answer = answer.replace("[year]", years[0]);
+      } else if (
+        rule.pattern_description.includes("8-digit number (impressed)")
+      ) {
+        // YDDDYRRR format
+        const yearDigit = serial[0];
+        const dayOfYear = serial.substring(1, 4);
+        const factoryRanking = serial.substring(5, 8);
+
+        // Determine year based on digit and context
+        let year;
+        if (yearDigit >= "7") {
+          year = `197${yearDigit}`;
+        } else if (yearDigit <= "5") {
+          year = `200${yearDigit}`;
+        } else {
+          year = `198${yearDigit}`;
+        }
+        years = [year];
+
+        // Determine factory based on answers
+        let factory = "";
+        if (previousAnswers.includes("Electric")) {
+          factory =
+            parseInt(factoryRanking) >= 300 && parseInt(factoryRanking) <= 999
+              ? "Nashville/Memphis"
+              : "Unknown factory";
+        } else if (previousAnswers.includes("Acoustic")) {
+          factory =
+            parseInt(factoryRanking) >= 1 && parseInt(factoryRanking) <= 299
+              ? "Bozeman, MT"
+              : "Unknown factory";
+        }
+
+        // Generate answer for this format
+        answer =
+          `This Gibson was made in ${year} on day ${parseInt(
+            dayOfYear
+          )} of the year. ` +
+          `It was guitar #${parseInt(factoryRanking)} made that day` +
+          (factory ? ` at the ${factory} factory` : "") +
+          ". " +
+          `${rule.notes}`;
+      } else if (
+        rule.pattern_description.includes(
+          "9-digit number (starts with model year)"
+        )
+      ) {
+        // YYRRRRRRR format
+        const modelYear = serial.substring(0, 2);
+        const ranking = serial.substring(2);
+        years = [`20${modelYear}`];
+        if (answer) {
+          answer = answer
+            .replace("[YY]", modelYear)
+            .replace("[RRRRRRR]", ranking);
+        }
+      } else if (
+        rule.pattern_description.includes("5 or 6-digit number (inked") ||
+        rule.pattern_description.includes("6-digit number (impressed)") ||
+        rule.pattern_description.includes(
+          "8-digit number (starts with '94')"
+        ) ||
+        rule.pattern_description.includes("Ink-Stamped number") ||
+        rule.pattern_description.includes("Starts with 'CS'") ||
+        rule.pattern_description.includes("9-digit number (impressed)")
+      ) {
+        // Rules that need answer generation after clarification
+        if (!answer) {
+          // Generate a basic answer based on the rule information
+          answer = `This Gibson with serial number ${serial} dates to ${rule.years}. ${rule.notes}`;
+        }
+      }
+
+      // Process answer if we have one
+      if (answer) {
+        answer = extractYearFromAnswer(answer, serial);
+
+        // Try to extract specific year from answer
+        if (answer.includes("20") || answer.includes("19")) {
+          const yearMatch = answer.match(/(?:19|20)\d{2}/);
+          if (yearMatch) {
+            years = [yearMatch[0]];
+          }
+        }
+      }
+
+      return {
+        years: years,
+        country: "USA",
+        confidence:
+          rule.notes.includes("ambiguity") || rule.notes.includes("uncertain")
+            ? "Medium"
+            : "High",
+        rule:
+          answer ||
+          `This Gibson with serial number ${serial} dates to ${rule.years}.`,
+        notes: rule.notes,
+        sourceNotes: rule.source_notes,
+      };
+    }
   }
 
-  // 8-digit serials from 1977-2013
-  if (serial.length === 8 && /^\d{8}$/.test(serial)) {
-    return {
-      needsClarification: true,
-      question: "What is the first digit of your serial number?",
-      options: ["0-3", "4-6", "7-9"],
-      reason:
-        "8-digit serials span multiple decades, first digit helps narrow down",
-    };
-  }
-
+  // No matching rule found
   return {
     years: ["Unknown"],
     country: "Unknown",
     confidence: "Low",
-    rule: "Serial format not recognized in our database",
+    rule: "Serial format not recognized in our Gibson database. This could be a special edition, import model, or the serial might need verification.",
+    notes:
+      "Gibson serial number systems are complex and have changed many times. Consider checking with Gibson directly or a vintage guitar expert.",
   };
 };
 
@@ -149,7 +422,19 @@ export const decodeSerial = (brand, serial) => {
 
 // Process clarification answers
 export const processClarification = (brand, serial, answer) => {
-  // This is simplified - real implementation would be more complex
+  // For Gibson, this is handled differently through decodeGibsonSerial
+  if (brand === "gibson") {
+    // This should not be called for Gibson anymore, but if it is, return a basic result
+    return {
+      years: ["Unknown"],
+      country: "USA",
+      confidence: "Low",
+      model: "Unable to determine specific model",
+      rule: "Please use the updated Gibson decoder for accurate results",
+    };
+  }
+
+  // This is simplified for other brands
   const baseResult = {
     years: ["2000-2024"],
     country: "Various",
@@ -165,16 +450,6 @@ export const processClarification = (brand, serial, answer) => {
       country: "USA",
       confidence: "Medium",
       rule: "Neck plate serials typically indicate vintage era Fenders",
-    };
-  }
-
-  if (brand === "gibson" && answer === "7-9") {
-    return {
-      ...baseResult,
-      years: ["1993-2003"],
-      country: "USA",
-      confidence: "Medium",
-      rule: "8-digit serials starting with 7-9 indicate 1990s-early 2000s",
     };
   }
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
-import { decodeSerial } from "../../utils/serialDecoder";
+import { decodeSerial, decodeGibsonSerial } from "../../utils/serialDecoder";
 import brandsData from "../../data/brands.json";
 import styles from "../../styles/components/ChatContainer.module.css";
 
@@ -107,19 +107,30 @@ const ChatContainer = () => {
     setTimeout(() => {
       addMessage("Let me look that up for you...", true);
 
-      const result = decodeSerial(guitarData.brand, serialNumber);
+      // Use special handler for Gibson
+      let result;
+      if (guitarData.brand === "gibson") {
+        result = decodeGibsonSerial(serialNumber, []);
+      } else {
+        result = decodeSerial(guitarData.brand, serialNumber);
+      }
 
       setTimeout(() => {
         if (result.needsClarification) {
-          // Store the clarification question
+          // Store the clarification question with all necessary data
           sessionStorage.setItem(
             "clarificationQuestion",
             JSON.stringify({
               question: result.question,
               options: result.options,
               reason: result.reason,
+              ruleIndex: result.ruleIndex,
+              previousAnswers: result.previousAnswers || [],
             })
           );
+
+          // Clear any previous answers for new lookups
+          sessionStorage.removeItem("clarificationAnswers");
 
           addMessage(
             `Hmm, I need a bit more info to narrow this down. ${result.reason}`,
