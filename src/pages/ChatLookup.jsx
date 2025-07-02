@@ -1,15 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import ChatMessage from "../components/chat/ChatMessage";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import brandsData from "../data/brands.json";
 import { decodeSerial, decodeGibsonSerial } from "../utils/serialDecoder";
+import {
+  encodeSessionState,
+  decodeSessionState,
+  generateShareableUrl,
+} from "../utils/sessionEncoder";
 import styles from "../styles/pages/ChatLookup.module.css";
 
 const ChatLookup = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const messagesEndRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
@@ -24,6 +30,7 @@ const ChatLookup = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [options, setOptions] = useState([]);
   const [showSourcesModal, setShowSourcesModal] = useState(false);
+  const [shareableUrl, setShareableUrl] = useState(null);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -32,12 +39,27 @@ const ChatLookup = () => {
 
   // Initialize session
   useEffect(() => {
-    if (!sessionId) {
+    // Check for code parameter in URL
+    const urlParams = new URLSearchParams(location.search);
+    const code = urlParams.get("code");
+
+    if (code) {
+      // Decode session from URL (shared link scenario)
+      const decodedSession = decodeSessionState(code);
+      if (decodedSession) {
+        // Reconstruct the conversation from the decoded state
+        reconstructConversation(decodedSession);
+      } else {
+        // Invalid code - show error and start fresh
+        alert("Invalid or corrupted share link. Starting a new lookup.");
+        navigate("/lookup/" + generateSessionId());
+      }
+    } else if (!sessionId) {
       // Generate new session ID
       const newSessionId = generateSessionId();
       navigate(`/lookup/${newSessionId}`, { replace: true });
     } else {
-      // Try to load existing session
+      // Try to load from sessionStorage first (internal navigation)
       const savedSession = sessionStorage.getItem(`session_${sessionId}`);
       if (savedSession) {
         const data = JSON.parse(savedSession);
@@ -63,9 +85,9 @@ const ChatLookup = () => {
         initializeChat();
       }
     }
-  }, [sessionId, navigate]);
+  }, [sessionId, navigate, location.search]);
 
-  // Save session state whenever it changes
+  // Save session state for internal navigation
   useEffect(() => {
     if (sessionId && messages.length > 0) {
       const sessionState = {
@@ -74,6 +96,7 @@ const ChatLookup = () => {
         currentStep,
         timestamp: Date.now(),
       };
+      // Save to sessionStorage for internal navigation
       sessionStorage.setItem(
         `session_${sessionId}`,
         JSON.stringify(sessionState)
@@ -81,8 +104,130 @@ const ChatLookup = () => {
     }
   }, [sessionId, sessionData, messages, currentStep]);
 
+  // Update URL when conversation is complete
+  useEffect(() => {
+    if (
+      currentStep === "complete" &&
+      sessionData.result &&
+      !location.search.includes("code=")
+    ) {
+      // Generate and set shareable URL
+      const url = generateShareableUrl(sessionData);
+      setShareableUrl(url);
+      // Update browser URL without navigation
+      window.history.replaceState({}, "", url);
+    }
+  }, [currentStep, sessionData, location.search]);
+
   const generateSessionId = () => {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+  };
+
+  const reconstructConversation = (decodedSession) => {
+    // Set the session data
+    setSessionData(decodedSession);
+    setCurrentStep("complete");
+
+    // Reconstruct messages
+    const reconstructedMessages = [];
+
+    // Add initial greeting
+    reconstructedMessages.push({
+      id: Date.now(),
+      isRandy: true,
+      text: "Hey there! I'm Randy, your guitar specialist. I'd love to help you discover your guitar's history! 🎸",
+    });
+
+    reconstructedMessages.push({
+      id: Date.now() + 1,
+      isRandy: true,
+      text: "First things first - what brand is your guitar? You can select from the list or type it in.",
+    });
+
+    // Add brand selection
+    const brandName =
+      brandsData.brands.find((b) => b.id === decodedSession.brand)
+        ?.displayName || decodedSession.brand;
+    reconstructedMessages.push({
+      id: Date.now() + 2,
+      isRandy: false,
+      text: brandName,
+    });
+
+    reconstructedMessages.push({
+      id: Date.now() + 3,
+      isRandy: true,
+      text: `Great choice! ${brandName} makes some fantastic instruments. Now, can you share the serial number with me? It's usually on the back of the headstock or inside the sound hole.`,
+    });
+
+    // Add serial number
+    reconstructedMessages.push({
+      id: Date.now() + 4,
+      isRandy: false,
+      text: decodedSession.serialNumber,
+    });
+
+    // Add clarification questions and answers if any
+    if (
+      decodedSession.clarificationAnswers &&
+      decodedSession.clarificationAnswers.length > 0
+    ) {
+      // For each answer, we need to reconstruct the question
+      // This is a simplified version - in production you'd want to store questions too
+      decodedSession.clarificationAnswers.forEach((answer, index) => {
+        if (index === 0) {
+          reconstructedMessages.push({
+            id: Date.now() + 5 + index * 2,
+            isRandy: true,
+            text: "Hmm, I need a bit more info to narrow this down.",
+          });
+        } else {
+          reconstructedMessages.push({
+            id: Date.now() + 5 + index * 2,
+            isRandy: true,
+            text: "Thanks! I have another quick question...",
+          });
+        }
+
+        reconstructedMessages.push({
+          id: Date.now() + 6 + index * 2,
+          isRandy: false,
+          text: answer,
+        });
+      });
+
+      reconstructedMessages.push({
+        id: Date.now() + 100,
+        isRandy: true,
+        text: "Perfect! That helps narrow things down. Let me check my database...",
+      });
+    }
+
+    // Add result intro
+    let introMessage;
+    if (decodedSession.result.confidence === "High") {
+      introMessage = `Great news! I found detailed information about your ${brandName}.`;
+    } else if (decodedSession.result.confidence === "Medium") {
+      introMessage = `I've found some information about your ${brandName}, though there's a bit of uncertainty due to the serial number format.`;
+    } else {
+      introMessage = `I found some basic information about your ${brandName}, but the serial number format is unusual, so I'm less certain about the details.`;
+    }
+
+    reconstructedMessages.push({
+      id: Date.now() + 200,
+      isRandy: true,
+      text: introMessage,
+    });
+
+    // Add results display
+    reconstructedMessages.push({
+      id: Date.now() + 201,
+      isRandy: true,
+      text: null,
+      showResults: true,
+    });
+
+    setMessages(reconstructedMessages);
   };
 
   const initializeChat = () => {
@@ -519,7 +664,39 @@ const ChatLookup = () => {
       {/* Share URL notice */}
       {currentStep === "complete" && (
         <div className={styles.shareNotice}>
-          <p>📎 Share this lookup: {window.location.href}</p>
+          <p>📎 Share this lookup:</p>
+          <div className={styles.shareActions}>
+            <input
+              type="text"
+              value={shareableUrl || window.location.href}
+              readOnly
+              className={styles.shareInput}
+              onClick={(e) => e.target.select()}
+            />
+            <button
+              className={styles.copyButton}
+              onClick={() => {
+                const urlToCopy = shareableUrl || window.location.href;
+                navigator.clipboard
+                  .writeText(urlToCopy)
+                  .then(() => {
+                    alert("Link copied to clipboard!");
+                  })
+                  .catch(() => {
+                    // Fallback for older browsers
+                    const input = document.createElement("input");
+                    input.value = urlToCopy;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(input);
+                    alert("Link copied to clipboard!");
+                  });
+              }}
+            >
+              Copy Link
+            </button>
+          </div>
         </div>
       )}
 

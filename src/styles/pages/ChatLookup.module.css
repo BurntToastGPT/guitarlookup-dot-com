@@ -250,15 +250,62 @@
   padding: var(--space-3);
   background: rgba(147, 51, 234, 0.1);
   border-radius: var(--radius-md);
-  text-align: center;
   position: sticky;
   bottom: 0;
 }
 
 .shareNotice p {
-  margin: 0;
+  margin: 0 0 var(--space-2) 0;
   color: var(--color-text-dark);
   font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.shareActions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+
+.shareInput {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  border-radius: var(--radius-md);
+  background: white;
+  font-family: monospace;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-dark);
+  cursor: text;
+}
+
+.shareInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.copyButton {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.copyButton:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.copyButton:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Modal Styles */
