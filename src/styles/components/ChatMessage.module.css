@@ -3,6 +3,7 @@
   gap: var(--space-3);
   margin-bottom: var(--space-4);
   animation: fadeIn var(--transition-base);
+  width: 100%;
 }
 
 @keyframes fadeIn {
@@ -50,7 +51,7 @@
 }
 
 .user .messageBubble {
-  background: var(--color-secondary);
+  background: var(--color-primary);
   color: white;
 }
 
@@ -60,6 +61,10 @@
   color: var(--color-primary);
   display: block;
   margin-bottom: var(--space-1);
+}
+
+.user .name {
+  display: none;
 }
 
 .messageContent {

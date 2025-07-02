@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "../../styles/components/ChatMessage.module.css";
 
-const ChatMessage = ({ message, isRandy = true, children }) => {
+const ChatMessage = ({ message, isRandy = false, children }) => {
   return (
     <div
       className={`${styles.messageWrapper} ${
@@ -15,10 +15,8 @@ const ChatMessage = ({ message, isRandy = true, children }) => {
       )}
       <div className={styles.messageBubble}>
         {isRandy && <span className={styles.name}>Randy</span>}
-        <div className={styles.messageContent}>
-          {message}
-          {children}
-        </div>
+        {message && <div className={styles.messageContent}>{message}</div>}
+        {children}
       </div>
     </div>
   );

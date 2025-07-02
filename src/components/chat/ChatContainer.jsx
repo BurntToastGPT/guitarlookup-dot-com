@@ -138,7 +138,47 @@ const ChatContainer = () => {
           );
 
           setTimeout(() => {
-            navigate("/clarify");
+            // Generate session ID and navigate to unified chat
+            const sessionId =
+              Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            const sessionData = {
+              sessionData: {
+                brand: guitarData.brand,
+                serialNumber: serialNumber,
+                clarificationAnswers: [],
+                clarificationQuestion: result,
+                result: null,
+              },
+              messages: messages
+                .filter((m) => m.message)
+                .concat([
+                  {
+                    id: Date.now(),
+                    isRandy: false,
+                    message: serialNumber,
+                    text: serialNumber,
+                  },
+                  {
+                    id: Date.now() + 1,
+                    isRandy: true,
+                    message: `Hmm, I need a bit more info to narrow this down. ${result.reason}`,
+                    text: `Hmm, I need a bit more info to narrow this down. ${result.reason}`,
+                  },
+                  {
+                    id: Date.now() + 2,
+                    isRandy: true,
+                    message: result.question,
+                    text: result.question,
+                  },
+                ]),
+              currentStep: "clarification",
+              timestamp: Date.now(),
+            };
+            sessionStorage.setItem(
+              `session_${sessionId}`,
+              JSON.stringify(sessionData)
+            );
+            navigate(`/lookup/${sessionId}`);
           }, 1500);
         } else if (result.error) {
           addMessage(
@@ -147,16 +187,48 @@ const ChatContainer = () => {
             { showSerialInput: true }
           );
         } else {
-          // Store results and navigate
-          sessionStorage.setItem("decodingResult", JSON.stringify(result));
-
+          // Store results and navigate to unified chat
           addMessage(
             "Got it! I've found some information about your guitar. Let me show you what I discovered...",
             true
           );
 
           setTimeout(() => {
-            navigate("/results");
+            const sessionId =
+              Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            const sessionData = {
+              sessionData: {
+                brand: guitarData.brand,
+                serialNumber: serialNumber,
+                clarificationAnswers: [],
+                clarificationQuestion: null,
+                result: result,
+              },
+              messages: messages
+                .filter((m) => m.message)
+                .concat([
+                  {
+                    id: Date.now(),
+                    isRandy: false,
+                    message: serialNumber,
+                    text: serialNumber,
+                  },
+                  {
+                    id: Date.now() + 1,
+                    isRandy: true,
+                    message:
+                      "Got it! I've found some information about your guitar. Let me show you what I discovered...",
+                    text: "Got it! I've found some information about your guitar. Let me show you what I discovered...",
+                  },
+                ]),
+              currentStep: "complete",
+              timestamp: Date.now(),
+            };
+            sessionStorage.setItem(
+              `session_${sessionId}`,
+              JSON.stringify(sessionData)
+            );
+            navigate(`/lookup/${sessionId}`);
           }, 1500);
         }
       }, 1500);
