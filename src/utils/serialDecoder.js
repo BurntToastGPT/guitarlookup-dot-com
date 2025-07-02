@@ -7,6 +7,33 @@ const replacePlaceholder = (text, serial) => {
   return text.replace(/\[serial_number\]/g, serial);
 };
 
+// Helper function to calculate exact date from day of year
+const getDateFromDayOfYear = (year, dayOfYear) => {
+  const date = new Date(year, 0); // January 1st
+  date.setDate(dayOfYear);
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  return {
+    month: months[date.getMonth()],
+    day: date.getDate(),
+    year: year,
+  };
+};
+
 // Helper function to extract year info from rule answers
 const extractYearFromAnswer = (answer, serial) => {
   if (!answer) return null;
@@ -262,29 +289,72 @@ export const decodeGibsonSerial = (
         }
         years = [year];
 
-        // Determine factory based on answers
-        let factory = "";
+        // Determine factory based on answers and ranking
+        let factory = "Not available";
+        let factoryDetails = "";
+
         if (previousAnswers.includes("Electric")) {
-          factory =
-            parseInt(factoryRanking) >= 300 && parseInt(factoryRanking) <= 999
-              ? "Nashville/Memphis"
-              : "Unknown factory";
+          const ranking = parseInt(factoryRanking);
+          if (ranking >= 300 && ranking <= 999) {
+            factory = "Nashville/Memphis";
+            factoryDetails =
+              "Electric guitars with rankings 300-999 were made in Nashville or Memphis";
+          } else if (ranking >= 1 && ranking <= 299) {
+            factory = "Kalamazoo";
+            factoryDetails =
+              "Electric guitars with rankings 1-299 were made in Kalamazoo";
+          }
         } else if (previousAnswers.includes("Acoustic")) {
-          factory =
-            parseInt(factoryRanking) >= 1 && parseInt(factoryRanking) <= 299
-              ? "Bozeman, MT"
-              : "Unknown factory";
+          const ranking = parseInt(factoryRanking);
+          if (ranking >= 1 && ranking <= 299) {
+            factory = "Bozeman, MT";
+            factoryDetails =
+              "Acoustic guitars with rankings 1-299 were made in Bozeman, Montana";
+          } else if (ranking >= 300 && ranking <= 999) {
+            factory = "Nashville";
+            factoryDetails =
+              "Acoustic guitars with rankings 300-999 were made in Nashville";
+          }
         }
+
+        // Calculate exact date
+        const exactDate = getDateFromDayOfYear(
+          parseInt(year),
+          parseInt(dayOfYear)
+        );
 
         // Generate answer for this format
         answer =
-          `This Gibson was made in ${year} on day ${parseInt(
-            dayOfYear
-          )} of the year. ` +
+          `This Gibson was made on ${exactDate.month} ${exactDate.day}, ${year}. ` +
           `It was guitar #${parseInt(factoryRanking)} made that day` +
-          (factory ? ` at the ${factory} factory` : "") +
+          (factory !== "Not available" ? ` at the ${factory} factory` : "") +
           ". " +
           `${rule.notes}`;
+
+        // Return enhanced structure
+        return {
+          years: years,
+          exactDate: exactDate,
+          country: "USA",
+          factory: factory,
+          factoryDetails: factoryDetails,
+          productionNumber: parseInt(factoryRanking),
+          productionContext: `#${parseInt(
+            factoryRanking
+          )} made on day ${parseInt(dayOfYear)} of ${year}`,
+          confidence: "High",
+          rule: answer,
+          notes: rule.notes,
+          sourceNotes: rule.source_notes,
+          sources: [
+            {
+              name: "Gibson Serial Number Guide",
+              url: "https://www.gibson.com/Support/Serial-Number-Search",
+              description:
+                "8-digit impressed format YDDDYRRR where Y=year digit, DDD=day of year, RRR=ranking/production number",
+            },
+          ],
+        };
       } else if (
         rule.pattern_description.includes(
           "9-digit number (starts with model year)"
@@ -293,12 +363,41 @@ export const decodeGibsonSerial = (
         // YYRRRRRRR format
         const modelYear = serial.substring(0, 2);
         const ranking = serial.substring(2);
-        years = [`20${modelYear}`];
+        const fullYear = `20${modelYear}`;
+        years = [fullYear];
+
         if (answer) {
           answer = answer
             .replace("[YY]", modelYear)
             .replace("[RRRRRRR]", ranking);
         }
+
+        return {
+          years: years,
+          exactDate: null, // Production sequence doesn't give exact date
+          country: "USA",
+          factory: "Not available", // Modern Gibsons don't specify factory in serial
+          productionNumber: parseInt(ranking),
+          productionContext: `Production sequence #${parseInt(
+            ranking
+          )} in ${fullYear}`,
+          confidence: "High",
+          rule:
+            answer ||
+            `This Gibson was made in ${fullYear}, production sequence #${parseInt(
+              ranking
+            )}`,
+          notes: rule.notes,
+          sourceNotes: rule.source_notes,
+          sources: [
+            {
+              name: "Gibson Serial Number Guide",
+              url: "https://www.gibson.com/Support/Serial-Number-Search",
+              description:
+                "9-digit format YYRRRRRRR where YY=model year, RRRRRRR=ranking/production sequence",
+            },
+          ],
+        };
       } else if (
         rule.pattern_description.includes("5 or 6-digit number (inked") ||
         rule.pattern_description.includes("6-digit number (impressed)") ||
@@ -329,9 +428,43 @@ export const decodeGibsonSerial = (
         }
       }
 
+      // Default enhanced return structure for other patterns
+      let modelNotes = null;
+      if (
+        rule.notes.includes("Centennial") ||
+        rule.notes.includes("100th Anniversary")
+      ) {
+        modelNotes = "Centennial edition (100th Anniversary)";
+      } else if (rule.notes.includes("Les Paul Classic")) {
+        modelNotes = "Les Paul Classic model";
+      } else if (rule.notes.includes("Historic")) {
+        modelNotes = "Historic Reissue model";
+      }
+
+      // Determine sources based on pattern
+      let sources = [
+        {
+          name: "Gibson Serial Number Guide",
+          url: "https://www.gibson.com/Support/Serial-Number-Search",
+          description: rule.pattern_description,
+        },
+      ];
+
+      if (rule.source_notes) {
+        sources.push({
+          name: "Additional Research",
+          url: "",
+          description: rule.source_notes,
+        });
+      }
+
       return {
-        years: years,
+        years: Array.isArray(years) ? years : [years],
+        exactDate: null,
         country: "USA",
+        factory: "Not available",
+        productionNumber: null,
+        modelNotes: modelNotes,
         confidence:
           rule.notes.includes("ambiguity") || rule.notes.includes("uncertain")
             ? "Medium"
@@ -341,6 +474,7 @@ export const decodeGibsonSerial = (
           `This Gibson with serial number ${serial} dates to ${rule.years}.`,
         notes: rule.notes,
         sourceNotes: rule.source_notes,
+        sources: sources,
       };
     }
   }

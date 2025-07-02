@@ -10,6 +10,7 @@ const Results = () => {
   const [guitarData, setGuitarData] = useState(null);
   const [decodingResult, setDecodingResult] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [showSourcesModal, setShowSourcesModal] = useState(false);
 
   useEffect(() => {
     // Get data from sessionStorage
@@ -57,14 +58,23 @@ const Results = () => {
     setMessages(initialMessages);
 
     // Add result details after a delay
-    setTimeout(() => {
-      const detailsMessage = {
-        id: 2,
-        isRandy: true,
-        showResults: true,
-      };
-      setMessages((prev) => [...prev, detailsMessage]);
+    const timer = setTimeout(() => {
+      setMessages((prev) => {
+        // Check if we already have a results message to prevent duplicates
+        if (prev.some((msg) => msg.showResults)) {
+          return prev;
+        }
+        const detailsMessage = {
+          id: 2,
+          isRandy: true,
+          showResults: true,
+        };
+        return [...prev, detailsMessage];
+      });
     }, 1200);
+
+    // Cleanup timer on unmount
+    return () => clearTimeout(timer);
   }, [navigate]);
 
   const handleFeedback = () => {
@@ -74,6 +84,14 @@ const Results = () => {
   const handleNewSearch = () => {
     sessionStorage.clear();
     navigate("/");
+  };
+
+  const handleShowSources = () => {
+    setShowSourcesModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowSourcesModal(false);
   };
 
   if (!guitarData || !decodingResult) {
@@ -106,6 +124,17 @@ const Results = () => {
                     </span>
                   </div>
 
+                  {decodingResult.exactDate && (
+                    <div className={styles.resultItem}>
+                      <span className={styles.label}>📆 Exact Date:</span>
+                      <span className={styles.value}>
+                        {decodingResult.exactDate.month}{" "}
+                        {decodingResult.exactDate.day},{" "}
+                        {decodingResult.exactDate.year}
+                      </span>
+                    </div>
+                  )}
+
                   {decodingResult.country &&
                     decodingResult.country !== "Unknown" && (
                       <div className={styles.resultItem}>
@@ -116,11 +145,40 @@ const Results = () => {
                       </div>
                     )}
 
+                  {decodingResult.factory &&
+                    decodingResult.factory !== "Not available" && (
+                      <div className={styles.resultItem}>
+                        <span className={styles.label}>🏭 Factory:</span>
+                        <span className={styles.value}>
+                          {decodingResult.factory}
+                        </span>
+                      </div>
+                    )}
+
+                  {decodingResult.productionNumber && (
+                    <div className={styles.resultItem}>
+                      <span className={styles.label}>🔢 Production #:</span>
+                      <span className={styles.value}>
+                        {decodingResult.productionContext ||
+                          `#${decodingResult.productionNumber}`}
+                      </span>
+                    </div>
+                  )}
+
                   {decodingResult.model && (
                     <div className={styles.resultItem}>
                       <span className={styles.label}>🎸 Model:</span>
                       <span className={styles.value}>
                         {decodingResult.model}
+                      </span>
+                    </div>
+                  )}
+
+                  {decodingResult.modelNotes && (
+                    <div className={styles.resultItem}>
+                      <span className={styles.label}>✨ Special Edition:</span>
+                      <span className={styles.value}>
+                        {decodingResult.modelNotes}
                       </span>
                     </div>
                   )}
@@ -151,6 +209,16 @@ const Results = () => {
                       </p>
                     </div>
                   )}
+
+                  {decodingResult.sources &&
+                    decodingResult.sources.length > 0 && (
+                      <button
+                        className={styles.sourcesButton}
+                        onClick={handleShowSources}
+                      >
+                        See sources
+                      </button>
+                    )}
                 </div>
               )}
             </ChatMessage>
@@ -171,6 +239,72 @@ const Results = () => {
           </Button>
         </div>
       </div>
+
+      {/* Sources Modal */}
+      {showSourcesModal && decodingResult.sources && (
+        <div className={styles.modalOverlay} onClick={handleCloseModal}>
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h2>How Randy Decoded Your Serial Number</h2>
+              <button className={styles.closeButton} onClick={handleCloseModal}>
+                ×
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <section className={styles.modalSection}>
+                <h3>🔍 Decoding Logic</h3>
+                <p className={styles.serialDisplay}>
+                  Serial Number: <strong>{guitarData.serialNumber}</strong>
+                </p>
+                <p>{decodingResult.rule}</p>
+                {decodingResult.notes && (
+                  <p className={styles.notesText}>
+                    <em>Note: {decodingResult.notes}</em>
+                  </p>
+                )}
+              </section>
+
+              <section className={styles.modalSection}>
+                <h3>📚 Sources</h3>
+                {decodingResult.sources.map((source, index) => (
+                  <div key={index} className={styles.sourceItem}>
+                    <h4>{source.name}</h4>
+                    <p>{source.description}</p>
+                    {source.url && (
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.sourceLink}
+                      >
+                        Visit source →
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </section>
+
+              {decodingResult.factoryDetails && (
+                <section className={styles.modalSection}>
+                  <h3>🏭 Factory Information</h3>
+                  <p>{decodingResult.factoryDetails}</p>
+                </section>
+              )}
+
+              {decodingResult.sourceNotes && (
+                <section className={styles.modalSection}>
+                  <h3>📝 Additional Notes</h3>
+                  <p>{decodingResult.sourceNotes}</p>
+                </section>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
