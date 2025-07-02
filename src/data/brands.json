@@ -1,0 +1,54 @@
+{
+  "brands": [
+    {
+      "id": "fender",
+      "name": "Fender",
+      "displayName": "Fender"
+    },
+    {
+      "id": "gibson",
+      "name": "Gibson",
+      "displayName": "Gibson"
+    },
+    {
+      "id": "martin",
+      "name": "Martin",
+      "displayName": "Martin"
+    },
+    {
+      "id": "taylor",
+      "name": "Taylor",
+      "displayName": "Taylor"
+    },
+    {
+      "id": "ibanez",
+      "name": "Ibanez",
+      "displayName": "Ibanez"
+    },
+    {
+      "id": "yamaha",
+      "name": "Yamaha",
+      "displayName": "Yamaha"
+    },
+    {
+      "id": "prs",
+      "name": "PRS",
+      "displayName": "PRS (Paul Reed Smith)"
+    },
+    {
+      "id": "gretsch",
+      "name": "Gretsch",
+      "displayName": "Gretsch"
+    },
+    {
+      "id": "epiphone",
+      "name": "Epiphone",
+      "displayName": "Epiphone"
+    },
+    {
+      "id": "rickenbacker",
+      "name": "Rickenbacker",
+      "displayName": "Rickenbacker"
+    }
+  ]
+}
