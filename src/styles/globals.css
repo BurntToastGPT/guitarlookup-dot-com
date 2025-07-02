@@ -1,6 +1,9 @@
 /* Import style guide variables */
 @import "./variables.css";
 
+/* Import Google Fonts for premium typography */
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Inter:wght@400;500;600;700&display=swap");
+
 /* CSS Reset and Global Styles */
 * {
   margin: 0;
@@ -17,22 +20,110 @@ html {
 body {
   font-family: var(--font-family);
   line-height: 1.6;
-  color: var(--color-text-light);
-  background-color: var(--color-dark-bg);
+  color: var(--color-charcoal);
   min-height: 100vh;
+  position: relative;
+
+  /* Premium deep brown woodgrain background */
+  background-color: #3d2f20; /* Warmer base for better woodgrain visibility */
+  background-image:
+    /* Vignette overlay for depth */ radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      rgba(26, 20, 16, 0.3) 70%,
+      rgba(26, 20, 16, 0.6) 100%
+    ),
+    /* Semi-transparent deep brown overlay */
+      linear-gradient(rgba(44, 33, 18, 0.82), rgba(44, 33, 18, 0.82)),
+    /* Primary woodgrain pattern - vertical grain lines */
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        rgba(139, 107, 70, 0.15) 1px,
+        rgba(160, 123, 81, 0.25) 2px,
+        rgba(139, 107, 70, 0.15) 3px,
+        transparent 4px,
+        transparent 6px,
+        rgba(107, 82, 54, 0.2) 7px,
+        rgba(92, 69, 46, 0.15) 8px,
+        transparent 9px,
+        transparent 12px
+      ),
+    /* Secondary woodgrain - fine horizontal lines */
+      repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 20px,
+        rgba(160, 123, 81, 0.08) 21px,
+        transparent 22px,
+        transparent 40px,
+        rgba(139, 107, 70, 0.06) 41px,
+        transparent 42px
+      ),
+    /* Woodgrain pattern - organic diagonal variation */
+      repeating-linear-gradient(
+        87deg,
+        transparent 0px,
+        transparent 15px,
+        rgba(160, 123, 81, 0.12) 16px,
+        rgba(139, 107, 70, 0.08) 18px,
+        transparent 19px,
+        transparent 35px,
+        rgba(107, 82, 54, 0.1) 36px,
+        transparent 37px,
+        transparent 50px
+      ),
+    /* Wood knots and natural variations */
+      radial-gradient(
+        ellipse 300px 200px at 25% 30%,
+        rgba(92, 69, 46, 0.2) 0%,
+        transparent 40%
+      ),
+    radial-gradient(
+      ellipse 400px 300px at 70% 60%,
+      rgba(107, 82, 54, 0.15) 0%,
+      transparent 35%
+    ),
+    radial-gradient(
+      ellipse 250px 180px at 85% 25%,
+      rgba(92, 69, 46, 0.18) 0%,
+      transparent 30%
+    ),
+    /* Base wood texture with more variation */
+      linear-gradient(
+        180deg,
+        rgba(139, 107, 70, 0.25) 0%,
+        rgba(107, 82, 54, 0.3) 15%,
+        rgba(160, 123, 81, 0.28) 30%,
+        rgba(92, 69, 46, 0.32) 45%,
+        rgba(139, 107, 70, 0.3) 60%,
+        rgba(107, 82, 54, 0.28) 75%,
+        rgba(160, 123, 81, 0.25) 90%,
+        rgba(139, 107, 70, 0.3) 100%
+      );
+  background-size: 100% 100%, /* vignette */ 100% 100%, /* overlay */ 20px 100%,
+    /* vertical grain */ 100% 100%, /* horizontal grain */ 100% 100%,
+    /* diagonal grain */ 100% 100%, /* knot 1 */ 100% 100%,
+    /* knot 2 */ 100% 100%, /* knot 3 */ 100% 800px; /* base texture */
+  background-position: center center, 0 0, 0 0, 0 0, 5px 0, -50px 100px,
+    150px -80px, 80px 50px, 0 0;
+  background-attachment: fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed,
+    fixed;
 }
 
-/* Typography - matching style guide */
+/* Typography - Premium serif headings */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
+  font-family: var(--font-family-serif);
   font-weight: var(--font-weight-bold);
   line-height: 1.2;
   margin-bottom: var(--space-4);
-  color: var(--color-text-light);
+  color: var(--color-deep-green);
+  text-shadow: 0 1px 2px rgba(58, 51, 35, 0.1);
 }
 
 h1 {
@@ -53,18 +144,20 @@ h4 {
 
 p {
   margin-bottom: var(--space-4);
-  color: var(--color-text-light);
+  color: var(--color-charcoal);
 }
 
 /* Links */
 a {
-  color: var(--color-primary);
+  color: var(--color-deep-green);
   text-decoration: none;
-  transition: opacity var(--transition-base);
+  transition: all var(--transition-base);
+  position: relative;
 }
 
 a:hover {
-  opacity: 0.8;
+  color: var(--color-gold);
+  text-shadow: 0 0 8px rgba(226, 194, 117, 0.3);
 }
 
 /* Container */
@@ -79,7 +172,6 @@ a:hover {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--color-dark-bg);
 }
 
 .main-content {
@@ -94,12 +186,28 @@ a:hover {
   padding: var(--space-8) var(--space-4);
 }
 
-/* Section Headers - matching style guide orange text */
+/* Section Headers - Premium deep green with serif font */
 .section-header {
-  color: var(--color-primary);
+  color: var(--color-deep-green);
+  font-family: var(--font-family-serif);
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-3xl);
   margin-bottom: var(--space-6);
+  text-shadow: 0 2px 4px rgba(58, 51, 35, 0.1);
+}
+
+/* Premium Card Styles */
+.card {
+  background-color: var(--color-ivory);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+  transition: all var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 /* Utility Classes */
@@ -108,11 +216,19 @@ a:hover {
 }
 
 .text-primary {
-  color: var(--color-primary);
+  color: var(--color-gold);
 }
 
 .text-light {
-  color: var(--color-text-light);
+  color: var(--color-ivory);
+}
+
+.text-dark {
+  color: var(--color-charcoal);
+}
+
+.text-green {
+  color: var(--color-deep-green);
 }
 
 .mt-1 {

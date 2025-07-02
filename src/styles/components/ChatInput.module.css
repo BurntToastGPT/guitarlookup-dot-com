@@ -7,28 +7,37 @@
 .input {
   flex: 1;
   padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-light-bg);
+  border: 1px solid rgba(58, 51, 35, 0.1);
   border-radius: var(--radius-full);
   font-size: var(--font-size-base);
   font-family: var(--font-family);
-  background: white;
-  transition: border-color var(--transition-fast);
+  background: rgba(255, 255, 255, 0.8);
+  transition: all var(--transition-fast);
   outline: none;
+  color: var(--color-charcoal);
+  /* Inset shadow for tactile effect */
+  box-shadow: var(--shadow-inset), 0 1px 2px rgba(58, 51, 35, 0.05);
 }
 
 .input:focus {
-  border-color: var(--color-primary);
+  border-color: var(--color-gold);
+  box-shadow: var(--shadow-inset-deep), 0 0 0 3px rgba(226, 194, 117, 0.3);
+}
+
+.input:hover:not(:focus) {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .input::placeholder {
   color: var(--color-text-muted);
+  opacity: 0.7;
 }
 
 .submitButton {
   padding: var(--space-3);
-  background: var(--color-primary);
-  color: white;
-  border: none;
+  background: var(--gradient-gold);
+  color: var(--color-deep-green);
+  border: 1px solid var(--border-gold-accent);
   border-radius: var(--radius-full);
   cursor: pointer;
   display: flex;
@@ -37,15 +46,32 @@
   transition: all var(--transition-fast);
   width: 48px;
   height: 48px;
+  box-shadow: var(--shadow-md), inset 0 1px 0 var(--highlight-gold);
+  position: relative;
+  overflow: hidden;
+}
+
+.submitButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+  pointer-events: none;
 }
 
 .submitButton:hover:not(:disabled) {
-  background: var(--color-accent);
-  transform: scale(1.05);
+  background: var(--gradient-gold-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover), var(--shadow-glow-gold),
+    inset 0 1px 0 var(--highlight-gold);
 }
 
 .submitButton:active:not(:disabled) {
-  transform: scale(0.95);
+  transform: translateY(0);
+  box-shadow: var(--shadow-inset), inset 0 1px 2px rgba(58, 51, 35, 0.2);
 }
 
 .submitButton:disabled {

@@ -1,24 +1,54 @@
 .header {
-  background-color: var(--color-dark-bg);
+  background-color: var(--color-deep-green);
   padding: var(--space-6) 0;
-  border-bottom: 1px solid rgba(247, 232, 253, 0.1);
+  /* Luxurious gold engraved border effect */
+  border-bottom: 2px solid var(--color-gold);
+  box-shadow: 0 2px 8px rgba(58, 51, 35, 0.2),
+    inset 0 -1px 0 rgba(226, 194, 117, 0.3);
+  position: relative;
+  /* Subtle texture overlay */
+  background-image: linear-gradient(
+    180deg,
+    rgba(226, 194, 117, 0.05) 0%,
+    transparent 100%
+  );
+}
+
+.header::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(226, 194, 117, 0.6) 20%,
+    rgba(226, 194, 117, 0.6) 80%,
+    transparent 100%
+  );
 }
 
 .logo {
   display: inline-block;
   text-decoration: none;
+  transition: all var(--transition-base);
 }
 
 .logoText {
   font-size: var(--font-size-4xl);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-light);
+  font-family: var(--font-family-serif);
+  color: var(--color-ivory);
   margin: 0;
   letter-spacing: -0.02em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 20px rgba(226, 194, 117, 0.2);
 }
 
 .logo:hover .logoText {
-  opacity: 0.9;
+  color: var(--color-gold);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 25px rgba(226, 194, 117, 0.4);
 }
 
 @media (max-width: 768px) {

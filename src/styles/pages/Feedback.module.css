@@ -1,21 +1,30 @@
 .chatContainer {
   max-width: 800px;
   margin: 0 auto;
-  background: var(--color-light-bg);
+  background: var(--color-ivory);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-xl);
   min-height: 500px;
+  position: relative;
+  /* Subtle texture overlay */
+  background-image: linear-gradient(
+    135deg,
+    rgba(248, 246, 237, 0.3) 0%,
+    transparent 40%
+  );
 }
 
 .messagesArea {
   padding: var(--space-6);
   background: linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0.9),
-    rgba(247, 232, 253, 0.3)
+    rgba(255, 251, 234, 0.9),
+    rgba(248, 246, 237, 0.5)
   );
   min-height: 400px;
+  /* Inner shadow for depth */
+  box-shadow: inset 0 2px 4px rgba(58, 51, 35, 0.05);
 }
 
 .feedbackOptions {
@@ -32,25 +41,47 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-4);
-  background: white;
-  border: 2px solid var(--color-light-bg);
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(226, 194, 117, 0.3);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-fast);
   min-width: 140px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.feedbackButton::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(226, 194, 117, 0.3);
+  transform: translate(-50%, -50%);
+  transition: all 0.5s;
 }
 
 .feedbackButton:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-gold);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.feedbackButton:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .feedbackButton.selected {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
+  background: var(--gradient-gold);
+  border-color: var(--border-gold-accent);
+  color: var(--color-deep-green);
+  font-weight: var(--font-weight-bold);
+  box-shadow: var(--shadow-md), inset 0 1px 0 var(--highlight-gold);
 }
 
 .emoji {
@@ -60,6 +91,13 @@
 .label {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
+  color: var(--color-charcoal);
+  position: relative;
+  z-index: 1;
+}
+
+.feedbackButton.selected .label {
+  color: var(--color-deep-green);
 }
 
 .additionalFeedbackSection {
@@ -83,41 +121,71 @@
   color: var(--color-text-muted);
   margin-bottom: var(--space-3);
   text-align: center;
+  font-style: italic;
 }
 
 .textarea {
   width: 100%;
   padding: var(--space-3);
-  border: 2px solid var(--color-light-bg);
+  border: 1px solid rgba(58, 51, 35, 0.1);
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
   font-family: var(--font-family);
   resize: vertical;
   min-height: 100px;
-  transition: border-color var(--transition-fast);
+  transition: all var(--transition-fast);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--color-charcoal);
+  /* Inset shadow for tactile effect */
+  box-shadow: var(--shadow-inset), 0 1px 2px rgba(58, 51, 35, 0.05);
 }
 
 .textarea:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--color-gold);
+  box-shadow: var(--shadow-inset-deep), 0 0 0 3px rgba(226, 194, 117, 0.3);
+}
+
+.textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
 }
 
 .userFeedbackText {
   margin-top: var(--space-2);
   padding: var(--space-3);
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(226, 194, 117, 0.1);
   border-radius: var(--radius-md);
   font-style: italic;
+  color: var(--color-charcoal);
+  border: 1px solid rgba(226, 194, 117, 0.2);
 }
 
 .actionArea {
   padding: var(--space-4) var(--space-6) var(--space-6);
-  background: white;
-  border-top: 1px solid rgba(34, 40, 58, 0.1);
+  background: var(--color-ivory);
+  border-top: 2px solid var(--color-gold);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   align-items: center;
+  position: relative;
+  box-shadow: 0 -2px 8px rgba(58, 51, 35, 0.1);
+}
+
+.actionArea::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(226, 194, 117, 0.4) 50%,
+    transparent 100%
+  );
 }
 
 /* Mobile responsive */

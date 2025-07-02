@@ -4,10 +4,17 @@
   height: calc(100vh - 200px); /* Adjust for header/footer */
   max-width: 800px;
   margin: 0 auto;
-  background: var(--color-light-bg);
+  background: var(--color-ivory);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  /* Subtle texture overlay */
+  background-image: linear-gradient(
+    135deg,
+    rgba(248, 246, 237, 0.3) 0%,
+    transparent 40%
+  );
 }
 
 .messagesArea {
@@ -16,16 +23,35 @@
   padding: var(--space-6);
   background: linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0.9),
-    rgba(247, 232, 253, 0.3)
+    rgba(255, 251, 234, 0.9),
+    rgba(248, 246, 237, 0.5)
   );
   scroll-behavior: smooth;
+  /* Inner shadow for depth */
+  box-shadow: inset 0 2px 4px rgba(58, 51, 35, 0.05);
 }
 
 .inputArea {
   padding: var(--space-4);
-  background: white;
-  border-top: 1px solid rgba(34, 40, 58, 0.1);
+  background: var(--color-ivory);
+  border-top: 2px solid var(--color-gold);
+  position: relative;
+  box-shadow: 0 -2px 8px rgba(58, 51, 35, 0.1);
+}
+
+.inputArea::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(226, 194, 117, 0.4) 50%,
+    transparent 100%
+  );
 }
 
 .brandSelectWrapper {
@@ -35,18 +61,25 @@
 .brandSelect {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-light-bg);
+  border: 1px solid rgba(58, 51, 35, 0.1);
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
   font-family: var(--font-family);
-  background: white;
+  background: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: border-color var(--transition-fast);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-inset), 0 1px 2px rgba(58, 51, 35, 0.05);
+  color: var(--color-charcoal);
 }
 
 .brandSelect:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--color-gold);
+  box-shadow: var(--shadow-inset-deep), 0 0 0 3px rgba(226, 194, 117, 0.3);
+}
+
+.brandSelect:hover:not(:focus) {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .serialInputWrapper {
@@ -68,8 +101,9 @@
   width: 8px;
   height: 8px;
   border-radius: var(--radius-full);
-  background: var(--color-text-muted);
+  background: var(--color-gold);
   animation: typingBounce 1.4s infinite ease-in-out;
+  box-shadow: 0 1px 2px rgba(58, 51, 35, 0.2);
 }
 
 .typingDots span:nth-child(1) {
@@ -95,20 +129,22 @@
 
 /* Scrollbar styling */
 .messagesArea::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 .messagesArea::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.messagesArea::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(58, 51, 35, 0.05);
   border-radius: var(--radius-full);
 }
 
+.messagesArea::-webkit-scrollbar-thumb {
+  background: var(--color-gold);
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 0 3px rgba(58, 51, 35, 0.2);
+}
+
 .messagesArea::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--border-gold-accent);
 }
 
 /* Mobile responsive */

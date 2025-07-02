@@ -1,21 +1,63 @@
 .hero {
   text-align: center;
   margin-bottom: var(--space-8);
+  padding: var(--space-8) var(--space-4);
+  background: var(--color-ivory);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  /* Subtle texture overlay */
+  background-image: radial-gradient(
+    ellipse at top,
+    rgba(226, 194, 117, 0.05) 0%,
+    transparent 60%
+  );
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(226, 194, 117, 0.08) 0%,
+    transparent 70%
+  );
+  animation: shimmer 20s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .title {
-  font-size: var(--font-size-3xl);
+  font-size: var(--font-size-5xl);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-dark);
+  font-family: var(--font-family-serif);
+  color: var(--color-deep-green);
   margin-bottom: var(--space-3);
+  text-shadow: 0 2px 4px rgba(58, 51, 35, 0.1);
+  position: relative;
+  z-index: 1;
 }
 
 .subtitle {
   font-size: var(--font-size-lg);
-  color: var(--color-text-muted);
+  color: var(--color-charcoal);
   max-width: 600px;
   margin: 0 auto;
-  line-height: 1.6;
+  line-height: 1.8;
+  position: relative;
+  z-index: 1;
 }
 
 /* Mobile responsive */
