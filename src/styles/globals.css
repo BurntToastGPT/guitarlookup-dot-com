@@ -23,37 +23,29 @@ body {
   color: var(--color-charcoal);
   min-height: 100vh;
   position: relative;
-
-  /* Premium wood texture background with subtle effect */
-  background-color: #7a6250; /* Lighter brown base */
-  background-image:
-    /* Large soft radial gradient for focus - lighter center, darker edges */ radial-gradient(
-      ellipse at center,
-      rgba(140, 120, 100, 0.3) 0%,
-      rgba(100, 85, 70, 0.5) 40%,
-      rgba(70, 60, 50, 0.7) 70%,
-      rgba(53, 43, 33, 0.9) 100%
-    ),
-    /* Lighter brown overlay with reduced opacity for texture visibility */
-      linear-gradient(rgba(80, 67, 52, 0.65), rgba(80, 67, 52, 0.65)),
-    /* Wood texture image */ url("/assets/wood-texture.png");
-
-  background-size: 100% 100%, /* radial gradient */ 100% 100%,
-    /* brown overlay */ 300px 300px; /* wood texture - smaller for more subtle pattern */
-
-  background-position: center center, 0 0, 0 0;
-
-  background-repeat: no-repeat, no-repeat, repeat;
-
-  background-attachment: fixed;
-
-  /* Blend mode for rich, integrated look */
-  background-blend-mode: normal, multiply, overlay;
-
-  /* Subtle filter for premium finish */
-  backdrop-filter: blur(0.2px);
+  overflow-x: hidden;
 }
 
+/* Blurred luthier workbench background */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #4a3b2a;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
+    url("/assets/luthier-workbench-bg.png");
+  background-size: cover, cover;
+  background-position: center center, center center;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed;
+  filter: blur(6px);
+  z-index: -2;
+  transition: transform 0.1s ease-out;
+  transform: translate(var(--parallax-x, 0px), var(--parallax-y, 0px));
+}
 /* Typography - Premium serif headings */
 h1,
 h2,

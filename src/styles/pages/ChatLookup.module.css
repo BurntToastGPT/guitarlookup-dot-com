@@ -1,47 +1,68 @@
 .container {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: var(--space-6) var(--space-4) var(--space-2);
+  padding: var(--space-4);
+  position: relative;
 }
 
-/* Main Chat Card - centered and floating with green border frame */
+/* Parallax background container */
+.container::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("/assets/luthier-workbench-bg.png");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  filter: blur(6px);
+  z-index: -1;
+  transition: transform 0.1s ease-out;
+  transform: translate(var(--parallax-x, 0px), var(--parallax-y, 0px));
+}
+
+/* Main Chat Card - glassmorphic floating design */
 .chatCard {
-  width: 92vw;
-  max-width: 1400px;
+  width: 65vw;
+  max-width: 900px;
   min-width: 320px;
-  background: var(--color-deep-green);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
   border-radius: 24px;
-  overflow: visible;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 120px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 12px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   margin: 0 auto;
-  height: 92vh;
-  max-height: 1100px;
-  min-height: 700px;
-  padding: 40px 20px; /* Reduced top/bottom green borders */
+  height: 85vh;
+  max-height: 800px;
+  min-height: 600px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Inner content wrapper with ivory background */
+/* Inner content wrapper - needed for proper flex layout */
 .innerContent {
-  background: var(--color-ivory);
-  border-radius: 16px;
-  overflow: hidden;
   flex: 1;
   display: flex;
   flex-direction: column;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: transparent;
+  min-height: 0; /* Critical for flex children to be scrollable */
+  overflow: hidden; /* Prevent overflow from inner content */
 }
 
-/* Header Bar - Now part of inner content */
+/* Header Bar - glassmorphic styling */
 .chatHeader {
-  background: linear-gradient(to bottom, rgba(41, 80, 50, 0.1), transparent);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
   padding: var(--space-6) var(--space-8) var(--space-4);
   text-align: center;
   position: relative;
-  border-bottom: 1px solid rgba(41, 80, 50, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
 }
 
@@ -51,7 +72,8 @@
   font-weight: var(--font-weight-bold);
   color: var(--color-deep-green);
   margin: 0;
-  text-shadow: 0 2px 4px rgba(58, 51, 35, 0.1);
+  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8),
+    0 1px 3px rgba(58, 51, 35, 0.3);
   letter-spacing: 0.5px;
 }
 
@@ -61,9 +83,10 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 3px;
   background: var(--gradient-gold);
   box-shadow: 0 0 10px rgba(226, 194, 117, 0.5);
+  opacity: 0.9;
 }
 
 /* Chat Window Container */
@@ -71,10 +94,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--color-ivory);
+  background: transparent;
   position: relative;
-  overflow: hidden;
-  min-height: 0;
+  min-height: 0; /* Critical for flex children to be scrollable */
+  overflow: hidden; /* Prevent overflow from children */
 }
 
 .messagesArea {
@@ -83,11 +106,8 @@
   overflow-y: auto;
   overflow-x: visible;
   scroll-behavior: smooth;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 251, 234, 0.95),
-    rgba(255, 251, 234, 0.8)
-  );
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
   position: relative;
   min-height: 0;
 }
@@ -116,8 +136,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: 0 var(--space-6);
+  padding: 0;
   margin-left: calc(40px + var(--space-3)); /* Align with Randy's messages */
+  margin-right: var(--space-6);
   position: relative;
   z-index: 10;
 }
@@ -184,20 +205,18 @@
 
 /* Share and Input Area Container */
 .bottomArea {
-  background: var(--color-ivory);
-  border-top: 1px solid rgba(226, 194, 117, 0.2);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
 }
 
-/* Share Notice - Now inside the chat card */
+/* Share Notice - glassmorphic styling */
 .shareNoticeInternal {
   padding: var(--space-3) var(--space-6);
-  background: linear-gradient(
-    to bottom,
-    rgba(226, 194, 117, 0.15),
-    rgba(226, 194, 117, 0.05)
-  );
-  border-bottom: 1px solid rgba(226, 194, 117, 0.3);
+  background: rgba(226, 194, 117, 0.1);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(226, 194, 117, 0.2);
 }
 
 .shareNoticeInternal p {
@@ -258,9 +277,10 @@
 
 .inputArea {
   padding: var(--space-3) var(--space-6);
-  background: var(--color-ivory);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
   position: relative;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .inputArea::before {
@@ -273,7 +293,7 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(226, 194, 117, 0.4) 50%,
+    rgba(226, 194, 117, 0.6) 50%,
     transparent 100%
   );
 }
@@ -366,12 +386,13 @@
 
 /* Results Card Styles */
 .resultsCard {
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   margin-top: var(--space-3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(226, 194, 117, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .resultsTitle {
@@ -692,18 +713,17 @@
   }
 
   .chatCard {
-    width: 97vw;
+    width: 95vw;
     max-width: 100%;
     min-width: unset;
-    height: 94vh;
+    height: 90vh;
     max-height: none;
     min-height: unset;
     border-radius: 20px;
-    padding: 20px 10px; /* Reduced green border for mobile */
   }
 
   .innerContent {
-    border-radius: 12px;
+    border-radius: 16px;
   }
 
   .chatHeader {

@@ -17,6 +17,7 @@ const ChatLookup = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const messagesEndRef = useRef(null);
+  const containerRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [currentStep, setCurrentStep] = useState("brand"); // brand, serial, clarification, complete
@@ -31,6 +32,7 @@ const ChatLookup = () => {
   const [options, setOptions] = useState([]);
   const [showSourcesModal, setShowSourcesModal] = useState(false);
   const [shareableUrl, setShareableUrl] = useState(null);
+  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -118,6 +120,46 @@ const ChatLookup = () => {
       window.history.replaceState({}, "", url);
     }
   }, [currentStep, sessionData, location.search]);
+
+  // Parallax effect for background
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (window.innerWidth <= 768) return; // Skip on mobile
+
+      const { clientX, clientY } = e;
+      const { innerWidth, innerHeight } = window;
+
+      // Calculate offset based on mouse position (max 15px movement)
+      const offsetX = (clientX / innerWidth - 0.5) * 30; // 30px range = 15px each direction
+      const offsetY = (clientY / innerHeight - 0.5) * 30;
+
+      setParallaxOffset({ x: offsetX, y: offsetY });
+    };
+
+    const handleDeviceOrientation = (e) => {
+      if (window.innerWidth > 768) return; // Only on mobile
+
+      // Use device orientation for mobile parallax
+      const { beta, gamma } = e; // beta: front-back tilt, gamma: left-right tilt
+
+      if (beta !== null && gamma !== null) {
+        // Limit the tilt effect and convert to offset
+        const offsetX = Math.max(-15, Math.min(15, gamma * 0.5));
+        const offsetY = Math.max(-15, Math.min(15, beta * 0.5));
+
+        setParallaxOffset({ x: offsetX, y: offsetY });
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("deviceorientation", handleDeviceOrientation);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("deviceorientation", handleDeviceOrientation);
+    };
+  }, []);
 
   const generateSessionId = () => {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
@@ -446,7 +488,14 @@ const ChatLookup = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <div
+      ref={containerRef}
+      className={styles.container}
+      style={{
+        "--parallax-x": `${parallaxOffset.x}px`,
+        "--parallax-y": `${parallaxOffset.y}px`,
+      }}
+    >
       <div className={styles.chatCard}>
         <div className={styles.innerContent}>
           <div className={styles.chatHeader}>
