@@ -5,8 +5,6 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import Header from "./components/common/Header";
-import Footer from "./components/common/Footer";
 import Home from "./pages/Home";
 import ChatLookup from "./pages/ChatLookup";
 import Feedback from "./pages/Feedback";
@@ -17,7 +15,6 @@ function App() {
   return (
     <Router>
       <div className="main-layout">
-        <Header />
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -36,7 +33,6 @@ function App() {
             <Route path="/thank-you" element={<ThankYou />} />
           </Routes>
         </main>
-        <Footer />
       </div>
     </Router>
   );

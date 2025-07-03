@@ -115,72 +115,106 @@ const Results = () => {
                     Your {brandName} Details:
                   </h3>
 
-                  <div className={styles.resultItem}>
-                    <span className={styles.label}>📅 Year(s):</span>
-                    <span className={styles.value}>
-                      {Array.isArray(decodingResult.years)
-                        ? decodingResult.years.join(" - ")
-                        : decodingResult.years}
-                    </span>
-                  </div>
-
-                  {decodingResult.exactDate && (
-                    <div className={styles.resultItem}>
-                      <span className={styles.label}>📆 Exact Date:</span>
-                      <span className={styles.value}>
-                        {decodingResult.exactDate.month}{" "}
-                        {decodingResult.exactDate.day},{" "}
-                        {decodingResult.exactDate.year}
-                      </span>
+                  {/* Show decoded values section if available */}
+                  {decodingResult.decodedValues && (
+                    <div className={styles.decodedSection}>
+                      <h4 className={styles.decodedTitle}>
+                        🔍 Decoded from serial number: {guitarData.serialNumber}
+                      </h4>
+                      {Object.entries(decodingResult.decodedValues).map(
+                        ([key, value]) => (
+                          <div key={key} className={styles.resultItem}>
+                            <span className={styles.label}>{key}:</span>
+                            <span className={styles.value}>{value}</span>
+                          </div>
+                        )
+                      )}
                     </div>
                   )}
 
-                  {decodingResult.country &&
-                    decodingResult.country !== "Unknown" && (
+                  {/* Standard result fields */}
+                  {!decodingResult.decodedValues && (
+                    <>
                       <div className={styles.resultItem}>
-                        <span className={styles.label}>🌍 Country:</span>
+                        <span className={styles.label}>📅 Year(s):</span>
                         <span className={styles.value}>
-                          {decodingResult.country}
+                          {Array.isArray(decodingResult.years)
+                            ? decodingResult.years.join(" - ")
+                            : decodingResult.years}
                         </span>
                       </div>
-                    )}
 
-                  {decodingResult.factory &&
-                    decodingResult.factory !== "Not available" && (
-                      <div className={styles.resultItem}>
-                        <span className={styles.label}>🏭 Factory:</span>
-                        <span className={styles.value}>
-                          {decodingResult.factory}
-                        </span>
-                      </div>
-                    )}
+                      {decodingResult.exactDate && (
+                        <div className={styles.resultItem}>
+                          <span className={styles.label}>📆 Exact Date:</span>
+                          <span className={styles.value}>
+                            {decodingResult.exactDate.month}{" "}
+                            {decodingResult.exactDate.day},{" "}
+                            {decodingResult.exactDate.year}
+                          </span>
+                        </div>
+                      )}
 
-                  {decodingResult.productionNumber && (
-                    <div className={styles.resultItem}>
-                      <span className={styles.label}>🔢 Production #:</span>
-                      <span className={styles.value}>
-                        {decodingResult.productionContext ||
-                          `#${decodingResult.productionNumber}`}
-                      </span>
-                    </div>
-                  )}
+                      {decodingResult.country &&
+                        decodingResult.country !== "Unknown" && (
+                          <div className={styles.resultItem}>
+                            <span className={styles.label}>🌍 Country:</span>
+                            <span className={styles.value}>
+                              {decodingResult.country}
+                            </span>
+                          </div>
+                        )}
 
-                  {decodingResult.model && (
-                    <div className={styles.resultItem}>
-                      <span className={styles.label}>🎸 Model:</span>
-                      <span className={styles.value}>
-                        {decodingResult.model}
-                      </span>
-                    </div>
-                  )}
+                      {decodingResult.factory &&
+                        decodingResult.factory !== "Not available" &&
+                        decodingResult.factory !== "Not specified" && (
+                          <div className={styles.resultItem}>
+                            <span className={styles.label}>🏭 Factory:</span>
+                            <span className={styles.value}>
+                              {decodingResult.factory}
+                            </span>
+                          </div>
+                        )}
 
-                  {decodingResult.modelNotes && (
-                    <div className={styles.resultItem}>
-                      <span className={styles.label}>✨ Special Edition:</span>
-                      <span className={styles.value}>
-                        {decodingResult.modelNotes}
-                      </span>
-                    </div>
+                      {decodingResult.productionNumber && (
+                        <div className={styles.resultItem}>
+                          <span className={styles.label}>🔢 Production #:</span>
+                          <span className={styles.value}>
+                            {decodingResult.productionContext ||
+                              `#${decodingResult.productionNumber}`}
+                          </span>
+                        </div>
+                      )}
+
+                      {decodingResult.batchNumber && (
+                        <div className={styles.resultItem}>
+                          <span className={styles.label}>📦 Batch:</span>
+                          <span className={styles.value}>
+                            {decodingResult.batchNumber}
+                          </span>
+                        </div>
+                      )}
+
+                      {decodingResult.model && (
+                        <div className={styles.resultItem}>
+                          <span className={styles.label}>🎸 Model:</span>
+                          <span className={styles.value}>
+                            {decodingResult.model}
+                          </span>
+                        </div>
+                      )}
+
+                      {decodingResult.modelNotes && (
+                        <div className={styles.resultItem}>
+                          <span className={styles.label}>
+                            ✨ Special Edition:
+                          </span>
+                          <span className={styles.value}>
+                            {decodingResult.modelNotes}
+                          </span>
+                        </div>
+                      )}
+                    </>
                   )}
 
                   <div className={styles.resultItem}>
@@ -199,13 +233,16 @@ const Results = () => {
                     <p className={styles.ruleText}>{decodingResult.rule}</p>
                   </div>
 
-                  {decodingResult.confidence !== "High" && (
+                  {(decodingResult.confidence !== "High" ||
+                    decodingResult.error) && (
                     <div className={styles.uncertaintyNote}>
                       <p>
-                        💡 <strong>Note:</strong> Serial number dating can be
-                        complex. For the most accurate information, I'd
-                        recommend contacting {brandName} directly or consulting
-                        with a vintage guitar expert.
+                        💡 <strong>Note:</strong>{" "}
+                        {decodingResult.error
+                          ? "We couldn't decode this serial number format. Please verify the serial number or contact the manufacturer."
+                          : "Serial number dating can be complex. For the most accurate information, I'd recommend contacting " +
+                            brandName +
+                            " directly or consulting with a vintage guitar expert."}
                       </p>
                     </div>
                   )}
@@ -260,6 +297,22 @@ const Results = () => {
                 <p className={styles.serialDisplay}>
                   Serial Number: <strong>{guitarData.serialNumber}</strong>
                 </p>
+
+                {decodingResult.decodedValues && (
+                  <div className={styles.decodedBreakdown}>
+                    <h4>Breakdown:</h4>
+                    <ul>
+                      {Object.entries(decodingResult.decodedValues).map(
+                        ([key, value]) => (
+                          <li key={key}>
+                            <strong>{key}:</strong> {value}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+
                 <p>{decodingResult.rule}</p>
                 {decodingResult.notes && (
                   <p className={styles.notesText}>

@@ -25,17 +25,17 @@ body {
   position: relative;
 
   /* Premium wood texture background with subtle effect */
-  background-color: #5a483a; /* Lighter brown base */
+  background-color: #7a6250; /* Lighter brown base */
   background-image:
     /* Large soft radial gradient for focus - lighter center, darker edges */ radial-gradient(
       ellipse at center,
-      rgba(120, 100, 80, 0.3) 0%,
-      rgba(80, 65, 50, 0.5) 40%,
-      rgba(50, 40, 30, 0.7) 70%,
-      rgba(33, 23, 13, 0.9) 100%
+      rgba(140, 120, 100, 0.3) 0%,
+      rgba(100, 85, 70, 0.5) 40%,
+      rgba(70, 60, 50, 0.7) 70%,
+      rgba(53, 43, 33, 0.9) 100%
     ),
     /* Lighter brown overlay with reduced opacity for texture visibility */
-      linear-gradient(rgba(60, 47, 32, 0.75), rgba(60, 47, 32, 0.75)),
+      linear-gradient(rgba(80, 67, 52, 0.65), rgba(80, 67, 52, 0.65)),
     /* Wood texture image */ url("/assets/wood-texture.png");
 
   background-size: 100% 100%, /* radial gradient */ 100% 100%,

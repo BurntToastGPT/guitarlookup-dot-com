@@ -1,20 +1,15 @@
-import React from "react";
-import ChatContainer from "../components/chat/ChatContainer";
-import styles from "../styles/pages/Home.module.css";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-  return (
-    <div className="page-wrapper">
-      <div className={styles.hero}>
-        <h1 className={styles.title}>Meet Randy, Your Guitar Expert</h1>
-        <p className={styles.subtitle}>
-          Let's discover your guitar's story together
-        </p>
-      </div>
+  const navigate = useNavigate();
 
-      <ChatContainer />
-    </div>
-  );
+  useEffect(() => {
+    // Automatically redirect to the chat lookup
+    navigate("/lookup");
+  }, [navigate]);
+
+  return null; // No content needed as we're redirecting
 };
 
 export default Home;

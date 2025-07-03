@@ -458,247 +458,321 @@ const ChatLookup = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.chatWindow}>
-        <div className={styles.messagesArea}>
-          {messages.map((msg) => (
-            <ChatMessage key={msg.id} isRandy={msg.isRandy} message={msg.text}>
-              {msg.showResults && sessionData.result && (
-                <div className={styles.resultsCard}>
-                  <h3 className={styles.resultsTitle}>
-                    Your{" "}
-                    {
-                      brandsData.brands.find((b) => b.id === sessionData.brand)
-                        ?.displayName
-                    }{" "}
-                    Details:
-                  </h3>
-
-                  <div className={styles.resultItem}>
-                    <span className={styles.label}>📅 Year(s):</span>
-                    <span className={styles.value}>
-                      {Array.isArray(sessionData.result.years)
-                        ? sessionData.result.years.join(" - ")
-                        : sessionData.result.years}
-                    </span>
-                  </div>
-
-                  {sessionData.result.exactDate && (
-                    <div className={styles.resultItem}>
-                      <span className={styles.label}>📆 Exact Date:</span>
-                      <span className={styles.value}>
-                        {sessionData.result.exactDate.month}{" "}
-                        {sessionData.result.exactDate.day},{" "}
-                        {sessionData.result.exactDate.year}
-                      </span>
-                    </div>
-                  )}
-
-                  {sessionData.result.country &&
-                    sessionData.result.country !== "Unknown" && (
-                      <div className={styles.resultItem}>
-                        <span className={styles.label}>🌍 Country:</span>
-                        <span className={styles.value}>
-                          {sessionData.result.country}
-                        </span>
-                      </div>
-                    )}
-
-                  {sessionData.result.factory &&
-                    sessionData.result.factory !== "Not available" && (
-                      <div className={styles.resultItem}>
-                        <span className={styles.label}>🏭 Factory:</span>
-                        <span className={styles.value}>
-                          {sessionData.result.factory}
-                        </span>
-                      </div>
-                    )}
-
-                  {sessionData.result.productionNumber && (
-                    <div className={styles.resultItem}>
-                      <span className={styles.label}>🔢 Production #:</span>
-                      <span className={styles.value}>
-                        {sessionData.result.productionContext ||
-                          `#${sessionData.result.productionNumber}`}
-                      </span>
-                    </div>
-                  )}
-
-                  {sessionData.result.modelNotes && (
-                    <div className={styles.resultItem}>
-                      <span className={styles.label}>✨ Special Edition:</span>
-                      <span className={styles.value}>
-                        {sessionData.result.modelNotes}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className={styles.resultItem}>
-                    <span className={styles.label}>🎯 Confidence:</span>
-                    <span
-                      className={`${styles.value} ${
-                        styles[sessionData.result.confidence.toLowerCase()]
-                      }`}
-                    >
-                      {sessionData.result.confidence}
-                    </span>
-                  </div>
-
-                  <div className={styles.ruleSection}>
-                    <p className={styles.ruleLabel}>How I figured this out:</p>
-                    <p className={styles.ruleText}>{sessionData.result.rule}</p>
-                  </div>
-
-                  {sessionData.result.confidence !== "High" && (
-                    <div className={styles.uncertaintyNote}>
-                      <p>
-                        💡 <strong>Note:</strong> Serial number dating can be
-                        complex. For the most accurate information, I'd
-                        recommend contacting{" "}
+      <div className={styles.chatCard}>
+        <div className={styles.innerContent}>
+          <div className={styles.chatHeader}>
+            <h1 className={styles.logoText}>GuitarLookup</h1>
+            <div className={styles.goldAccent}></div>
+          </div>
+          <div className={styles.chatWindow}>
+            <div className={styles.messagesArea}>
+              {messages.map((msg) => (
+                <ChatMessage
+                  key={msg.id}
+                  isRandy={msg.isRandy}
+                  message={msg.text}
+                >
+                  {msg.showResults && sessionData.result && (
+                    <div className={styles.resultsCard}>
+                      <h3 className={styles.resultsTitle}>
+                        Your{" "}
                         {
                           brandsData.brands.find(
                             (b) => b.id === sessionData.brand
                           )?.displayName
                         }{" "}
-                        directly or consulting with a vintage guitar expert.
-                      </p>
+                        Details:
+                      </h3>
+
+                      {/* Show decoded values section if available */}
+                      {sessionData.result.decodedValues && (
+                        <div className={styles.decodedSection}>
+                          <h4 className={styles.decodedTitle}>
+                            🔍 Decoded from serial number:{" "}
+                            {sessionData.serialNumber}
+                          </h4>
+                          {Object.entries(sessionData.result.decodedValues).map(
+                            ([key, value]) => (
+                              <div key={key} className={styles.resultItem}>
+                                <span className={styles.label}>{key}:</span>
+                                <span className={styles.value}>{value}</span>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )}
+
+                      {/* Standard result fields */}
+                      {!sessionData.result.decodedValues && (
+                        <>
+                          <div className={styles.resultItem}>
+                            <span className={styles.label}>📅 Year(s):</span>
+                            <span className={styles.value}>
+                              {Array.isArray(sessionData.result.years)
+                                ? sessionData.result.years.join(" - ")
+                                : sessionData.result.years}
+                            </span>
+                          </div>
+
+                          {sessionData.result.exactDate && (
+                            <div className={styles.resultItem}>
+                              <span className={styles.label}>
+                                📆 Exact Date:
+                              </span>
+                              <span className={styles.value}>
+                                {sessionData.result.exactDate.month}{" "}
+                                {sessionData.result.exactDate.day},{" "}
+                                {sessionData.result.exactDate.year}
+                              </span>
+                            </div>
+                          )}
+
+                          {sessionData.result.country &&
+                            sessionData.result.country !== "Unknown" && (
+                              <div className={styles.resultItem}>
+                                <span className={styles.label}>
+                                  🌍 Country:
+                                </span>
+                                <span className={styles.value}>
+                                  {sessionData.result.country}
+                                </span>
+                              </div>
+                            )}
+
+                          {sessionData.result.factory &&
+                            sessionData.result.factory !== "Not available" &&
+                            sessionData.result.factory !== "Not specified" && (
+                              <div className={styles.resultItem}>
+                                <span className={styles.label}>
+                                  🏭 Factory:
+                                </span>
+                                <span className={styles.value}>
+                                  {sessionData.result.factory}
+                                </span>
+                              </div>
+                            )}
+
+                          {sessionData.result.productionNumber && (
+                            <div className={styles.resultItem}>
+                              <span className={styles.label}>
+                                🔢 Production #:
+                              </span>
+                              <span className={styles.value}>
+                                {sessionData.result.productionContext ||
+                                  `#${sessionData.result.productionNumber}`}
+                              </span>
+                            </div>
+                          )}
+
+                          {sessionData.result.batchNumber && (
+                            <div className={styles.resultItem}>
+                              <span className={styles.label}>📦 Batch:</span>
+                              <span className={styles.value}>
+                                {sessionData.result.batchNumber}
+                              </span>
+                            </div>
+                          )}
+
+                          {sessionData.result.model && (
+                            <div className={styles.resultItem}>
+                              <span className={styles.label}>🎸 Model:</span>
+                              <span className={styles.value}>
+                                {sessionData.result.model}
+                              </span>
+                            </div>
+                          )}
+
+                          {sessionData.result.modelNotes && (
+                            <div className={styles.resultItem}>
+                              <span className={styles.label}>
+                                ✨ Special Edition:
+                              </span>
+                              <span className={styles.value}>
+                                {sessionData.result.modelNotes}
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      <div className={styles.resultItem}>
+                        <span className={styles.label}>🎯 Confidence:</span>
+                        <span
+                          className={`${styles.value} ${
+                            styles[sessionData.result.confidence.toLowerCase()]
+                          }`}
+                        >
+                          {sessionData.result.confidence}
+                        </span>
+                      </div>
+
+                      <div className={styles.ruleSection}>
+                        <p className={styles.ruleLabel}>
+                          How I figured this out:
+                        </p>
+                        <p className={styles.ruleText}>
+                          {sessionData.result.rule}
+                        </p>
+                      </div>
+
+                      {(sessionData.result.confidence !== "High" ||
+                        sessionData.result.error) && (
+                        <div className={styles.uncertaintyNote}>
+                          <p>
+                            💡 <strong>Note:</strong>{" "}
+                            {sessionData.result.error
+                              ? "We couldn't decode this serial number format. Please verify the serial number or contact the manufacturer."
+                              : "Serial number dating can be complex. For the most accurate information, I'd recommend contacting " +
+                                brandsData.brands.find(
+                                  (b) => b.id === sessionData.brand
+                                )?.displayName +
+                                " directly or consulting with a vintage guitar expert."}
+                          </p>
+                        </div>
+                      )}
+
+                      {sessionData.result.sources &&
+                        sessionData.result.sources.length > 0 && (
+                          <button
+                            className={styles.sourcesButton}
+                            onClick={handleShowSources}
+                          >
+                            See sources
+                          </button>
+                        )}
                     </div>
                   )}
+                </ChatMessage>
+              ))}
 
-                  {sessionData.result.sources &&
-                    sessionData.result.sources.length > 0 && (
-                      <button
-                        className={styles.sourcesButton}
-                        onClick={handleShowSources}
-                      >
-                        See sources
-                      </button>
-                    )}
-                </div>
-              )}
-            </ChatMessage>
-          ))}
-
-          {showOptions && options.length > 0 && (
-            <div className={styles.optionsContainer}>
-              {currentStep === "brand" ? (
-                <select
-                  className={styles.brandSelect}
-                  onChange={(e) =>
-                    e.target.value && handleBrandSelect(e.target.value)
-                  }
-                  value=""
-                >
-                  <option value="">-- Choose a brand --</option>
-                  {options.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div className={styles.clarificationOptions}>
-                  {options.map((opt) => (
-                    <button
-                      key={opt.value}
-                      className={styles.optionButton}
-                      onClick={() => handleClarificationAnswer(opt.value)}
+              {showOptions && options.length > 0 && (
+                <div className={styles.optionsContainer}>
+                  {currentStep === "brand" ? (
+                    <select
+                      className={styles.brandSelect}
+                      onChange={(e) =>
+                        e.target.value && handleBrandSelect(e.target.value)
+                      }
+                      value=""
                     >
-                      {opt.label}
-                    </button>
-                  ))}
+                      <option value="">-- Choose a brand --</option>
+                      {options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className={styles.clarificationOptions}>
+                      {options.map((opt) => (
+                        <button
+                          key={opt.value}
+                          className={styles.optionButton}
+                          onClick={() => handleClarificationAnswer(opt.value)}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
+
+              <div ref={messagesEndRef} />
             </div>
-          )}
 
-          <div ref={messagesEndRef} />
-        </div>
+            <div className={styles.bottomArea}>
+              {/* Share URL notice inside the card */}
+              {currentStep === "complete" && (
+                <div className={styles.shareNoticeInternal}>
+                  <p>📎 Share this lookup:</p>
+                  <div className={styles.shareActions}>
+                    <input
+                      type="text"
+                      value={shareableUrl || window.location.href}
+                      readOnly
+                      className={styles.shareInput}
+                      onClick={(e) => e.target.select()}
+                    />
+                    <button
+                      className={styles.copyButton}
+                      onClick={() => {
+                        const urlToCopy = shareableUrl || window.location.href;
+                        navigator.clipboard
+                          .writeText(urlToCopy)
+                          .then(() => {
+                            alert("Link copied to clipboard!");
+                          })
+                          .catch(() => {
+                            // Fallback for older browsers
+                            const input = document.createElement("input");
+                            input.value = urlToCopy;
+                            document.body.appendChild(input);
+                            input.select();
+                            document.execCommand("copy");
+                            document.body.removeChild(input);
+                            alert("Link copied to clipboard!");
+                          });
+                      }}
+                    >
+                      Copy Link
+                    </button>
+                  </div>
+                </div>
+              )}
 
-        <div className={styles.inputArea}>
-          {currentStep === "complete" ? (
-            <div className={styles.completedActions}>
-              <Button
-                onClick={() => navigate("/feedback")}
-                variant="primary"
-                size="large"
-              >
-                Help Randy Improve
-              </Button>
-              <Button
-                onClick={handleNewLookup}
-                variant="secondary"
-                size="medium"
-              >
-                Look Up Another Guitar
-              </Button>
+              <div className={styles.inputArea}>
+                {currentStep === "complete" ? (
+                  <div className={styles.completedActions}>
+                    <Button
+                      onClick={() => navigate("/feedback")}
+                      variant="primary"
+                      size="large"
+                    >
+                      Help Randy Improve
+                    </Button>
+                    <Button
+                      onClick={handleNewLookup}
+                      variant="secondary"
+                      size="medium"
+                    >
+                      Look Up Another Guitar
+                    </Button>
+                  </div>
+                ) : (
+                  currentStep !== "clarification" && (
+                    <form
+                      onSubmit={handleInputSubmit}
+                      className={styles.inputForm}
+                    >
+                      <input
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        placeholder={
+                          currentStep === "brand"
+                            ? "Type a brand name or select from above..."
+                            : currentStep === "serial"
+                            ? "Enter serial number..."
+                            : "Type your answer..."
+                        }
+                        className={styles.chatInput}
+                      />
+                      <button
+                        type="submit"
+                        disabled={!inputValue.trim()}
+                        className={styles.sendButton}
+                      >
+                        Send
+                      </button>
+                    </form>
+                  )
+                )}
+              </div>
             </div>
-          ) : (
-            currentStep !== "clarification" && (
-              <form onSubmit={handleInputSubmit} className={styles.inputForm}>
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={
-                    currentStep === "brand"
-                      ? "Type a brand name or select from above..."
-                      : currentStep === "serial"
-                      ? "Enter serial number..."
-                      : "Type your answer..."
-                  }
-                  className={styles.chatInput}
-                />
-                <button
-                  type="submit"
-                  disabled={!inputValue.trim()}
-                  className={styles.sendButton}
-                >
-                  Send
-                </button>
-              </form>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* Share URL notice */}
-      {currentStep === "complete" && (
-        <div className={styles.shareNotice}>
-          <p>📎 Share this lookup:</p>
-          <div className={styles.shareActions}>
-            <input
-              type="text"
-              value={shareableUrl || window.location.href}
-              readOnly
-              className={styles.shareInput}
-              onClick={(e) => e.target.select()}
-            />
-            <button
-              className={styles.copyButton}
-              onClick={() => {
-                const urlToCopy = shareableUrl || window.location.href;
-                navigator.clipboard
-                  .writeText(urlToCopy)
-                  .then(() => {
-                    alert("Link copied to clipboard!");
-                  })
-                  .catch(() => {
-                    // Fallback for older browsers
-                    const input = document.createElement("input");
-                    input.value = urlToCopy;
-                    document.body.appendChild(input);
-                    input.select();
-                    document.execCommand("copy");
-                    document.body.removeChild(input);
-                    alert("Link copied to clipboard!");
-                  });
-              }}
-            >
-              Copy Link
-            </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Sources Modal */}
       {showSourcesModal && sessionData.result?.sources && (
@@ -720,6 +794,22 @@ const ChatLookup = () => {
                 <p className={styles.serialDisplay}>
                   Serial Number: <strong>{sessionData.serialNumber}</strong>
                 </p>
+
+                {sessionData.result.decodedValues && (
+                  <div className={styles.decodedBreakdown}>
+                    <h4>Breakdown:</h4>
+                    <ul>
+                      {Object.entries(sessionData.result.decodedValues).map(
+                        ([key, value]) => (
+                          <li key={key}>
+                            <strong>{key}:</strong> {value}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+
                 <p>{sessionData.result.rule}</p>
                 {sessionData.result.notes && (
                   <p className={styles.notesText}>
