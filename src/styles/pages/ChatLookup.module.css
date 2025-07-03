@@ -26,7 +26,7 @@
   transform: translate(var(--parallax-x, 0px), var(--parallax-y, 0px));
 }
 
-/* Main Chat Card - glassmorphic floating design */
+/* Main Chat Card - glassmorphic floating design with Marshall-style piping */
 .chatCard {
   width: 65vw;
   max-width: 900px;
@@ -42,7 +42,24 @@
   height: 85vh;
   max-height: 800px;
   min-height: 600px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Marshall JCM 800 style piping border */
+  border: 3px solid var(--color-deep-green);
+  position: relative;
+  overflow: hidden; /* Ensure inner content respects border radius */
+}
+
+/* Inner piping effect for depth */
+.chatCard::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 22px;
+  border: 1px solid rgba(41, 80, 50, 0.3);
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Inner content wrapper - needed for proper flex layout */
@@ -64,6 +81,8 @@
   position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
+  border-radius: 21px 21px 0 0; /* Match parent radius minus border */
+  z-index: 2; /* Above the inner piping */
 }
 
 .logoText {
@@ -209,6 +228,9 @@
   backdrop-filter: blur(8px);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
+  border-radius: 0 0 21px 21px; /* Match parent radius minus border */
+  overflow: hidden; /* Ensure children respect rounded corners */
+  z-index: 2; /* Above the inner piping */
 }
 
 /* Share Notice - glassmorphic styling */

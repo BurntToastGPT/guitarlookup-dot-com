@@ -1,131 +1,364 @@
 {
   "gibson": [
     {
-      "pattern_description": "Pre-1952 Factory Order Numbers (FON)",
-      "years": "1902-1952",
-      "notes": "Before standard serial numbers, Gibson used Factory Order Numbers (FONs) inked or stamped inside the instrument. They consist of a batch number, a code for the instrument type, and a final number for its rank in the batch. These do not provide a precise year but can narrow it down significantly. A 'no-serial' period with no numbers existed from 1942-1947.",
-      "source_notes": "Rule added based on comprehensive pre-1975 data from both TrueVintageGuitar.com and GuitarInsite.nl.",
-      "answer": "This Gibson with Factory Order Number [serial_number] dates to the pre-1952 era. A specialist guide is required to decode the specific batch number and estimate the year.",
-      "clarifying_questions": []
-    },
-    {
-      "pattern_description": "5 or 6-digit number (inked, pre-1970)",
-      "years": "1952-1961 and 1961-1970",
-      "notes": "This pattern covers two overlapping and confusing eras. From 1952-1961, a sequential system was used (e.g., A-prefix numbers, then numbers starting with the year digit). From 1961-1970, numbers were stamped in ink but sequences were often repeated, making the same number appear in multiple years.",
-      "source_notes": "This rule consolidates the complex 1950s/60s information from TrueVintageGuitar.com and GuitarInsite.nl. Both sources emphasize the ambiguity of the 1961-1970 period.",
-      "answer": null,
+      "pattern_description": "FONs (Factory Order Numbers) \u2013 nan",
+      "years": "nan",
+      "notes": "nan\nnan\nnan",
+      "source_notes": "nan",
+      "answer": "This serial number pattern (FONs (Factory Order Numbers) \u2013 nan) is covered for years nan.",
       "clarifying_questions": [
-        {
-          "question": "For your Gibson with serial number [serial_number], do the guitar's features (e.g., headstock pitch, neck width, type of pickups) appear to be from the 1950s or 1960s? Potentiometer codes can also help narrow this down.",
-          "purpose": "To differentiate between the more orderly 1952-1961 system and the chaotic, reused numbers of the 1961-1970 period."
-        }
+        "nan"
       ]
     },
     {
-      "pattern_description": "6-digit number (impressed)",
-      "years": "1960s and 1970-1975",
-      "notes": "Six-digit numbers impressed into the headstock can indicate the late 1960s or the 1970-1975 period. The introduction of a 'MADE IN USA' stamp and volutes on the neck are key differentiators.",
-      "source_notes": "New rule based on information from TrueVintageGuitar.com and GuitarInsite.nl, which both highlight this overlapping period and the importance of physical features for accurate dating.",
-      "answer": null,
+      "pattern_description": "XXXX or XXXXX \u2013 3-5 digit Factory Order Number (FON)",
+      "years": "1902-1945",
+      "notes": "Batch number, used for internal tracking.\nThe number of digits can vary. Does not directly encode the year, but can be looked up in tables.\nFONs do not directly encode the year; they identify a production batch. Dating requires consulting historical shipping ledgers. Other instrument features are needed for precise dating.",
+      "source_notes": "https://reverb.com/news/how-to-date-a-gibson-using-serial-numbers-fons-and-logos",
+      "answer": "This serial number pattern (XXXX or XXXXX \u2013 3-5 digit Factory Order Number (FON)) is covered for years 1902-1945.",
       "clarifying_questions": [
-        {
-          "question": "Does your Gibson with serial number [serial_number] have a 'MADE IN USA' stamp below the serial number and/or a volute (a bump reinforcement) on the back of the neck where it meets the headstock?",
-          "purpose": "The presence of these features strongly indicates a 1970-1975 manufacturing date, separating it from 1960s models that used a similar numbering scheme."
-        }
+        "Is the number located inside the body of the guitar, visible through the f-hole or soundhole? Is it on a white paper label or stamped directly on the wood?"
       ]
     },
     {
-      "pattern_description": "8-digit decal/sticker number",
-      "years": "1975-1977",
-      "notes": "An 8-digit number on a decal (or sticker) on the back of the headstock. The first two digits identify the year: 99 = 1975, 00 = 1976, 06 = 1977.",
-      "source_notes": "Rule confirmed by all sources. TrueVintageGuitar.com refers to it as a 'sticker', which is included as an alternative term.",
-      "answer": "This Gibson was made in [year]. It was identified by its 8-digit decal/sticker serial number, a method used between 1975-1977.",
-      "clarifying_questions": []
+      "pattern_description": "XXXXA \u2013 FON with letter suffix",
+      "years": "1935-1942",
+      "notes": "Year of production indicated by the letter suffix (e.g., A=1935, B=1936).\nSometimes a second or third letter was used to indicate brand or \"Electric\".\nnan",
+      "source_notes": "https://reverb.com/news/how-to-date-a-gibson-using-serial-numbers-fons-and-logos",
+      "answer": "This serial number pattern (XXXXA \u2013 FON with letter suffix) is covered for years 1935-1942.",
+      "clarifying_questions": [
+        "nan"
+      ]
     },
     {
-      "pattern_description": "8-digit number (impressed)",
+      "pattern_description": "ZXXXX_XX \u2013 FON with letter prefix",
+      "years": "1952-1961",
+      "notes": "Year of production indicated by the letter prefix (e.g., Z=1952, Y=1953).\nThe letter appears before the batch number.\nnan",
+      "source_notes": "https://reverb.com/news/how-to-date-a-gibson-using-serial-numbers-fons-and-logos",
+      "answer": "This serial number pattern (ZXXXX_XX \u2013 FON with letter prefix) is covered for years 1952-1961.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "Early Serial Numbers \u2013 nan",
+      "years": "nan",
+      "notes": "nan\nnan\nnan",
+      "source_notes": "nan",
+      "answer": "This serial number pattern (Early Serial Numbers \u2013 nan) is covered for years nan.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "XXXXX \u2013 5-digit sequential number",
+      "years": "1902-1947",
+      "notes": "Sequential numbering, the year is estimated from the number range.\nUpper-end instruments were more likely to have serial numbers.\nnan",
+      "source_notes": "https://reverb.com/news/how-to-date-a-gibson-using-serial-numbers-fons-and-logos",
+      "answer": "This serial number pattern (XXXXX \u2013 5-digit sequential number) is covered for years 1902-1947.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "A_XXXX \u2013 \"A\" prefix with a space",
+      "years": "1947-1960",
+      "notes": "Sequential numbering for acoustic models with an \"A\" prefix.\nFound on a white paper label inside the guitar.\nnan",
+      "source_notes": "https://truevintageguitar.com/pages/gibson-serial-number-lookup",
+      "answer": "This serial number pattern (A_XXXX \u2013 \"A\" prefix with a space) is covered for years 1947-1960.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "1950s & Early 1960s Solid Body \u2013 nan",
+      "years": "nan",
+      "notes": "nan\nnan\nnan",
+      "source_notes": "nan",
+      "answer": "This serial number pattern (1950s & Early 1960s Solid Body \u2013 nan) is covered for years nan.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "Y_XXXX \u2013 1 digit (year) + space + 4 digits",
+      "years": "1952-1961",
+      "notes": "First digit is the last digit of the year (e.g., 3xxxx = 1953).\nInk stamped on the back of the headstock.\nnan",
+      "source_notes": "https://truevintageguitar.com/blogs/tvg-blog/how-to-date-a-vintage-gibson-les-paul-guitar/",
+      "answer": "This serial number pattern (Y_XXXX \u2013 1 digit (year) + space + 4 digits) is covered for years 1952-1961.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "Y_XXXXX \u2013 1 digit (year) + space + 5 digits",
+      "years": "1952-1961",
+      "notes": "First digit is the last digit of the year (e.g., 9xxxxx = 1959).\nInk stamped on the back of the headstock.\nnan",
+      "source_notes": "https://truevintageguitar.com/blogs/tvg-blog/how-to-date-a-vintage-gibson-les-paul-guitar/",
+      "answer": "This serial number pattern (Y_XXXXX \u2013 1 digit (year) + space + 5 digits) is covered for years 1952-1961.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "1960s \u2013 nan",
+      "years": "nan",
+      "notes": "nan\nnan\nnan",
+      "source_notes": "nan",
+      "answer": "This serial number pattern (1960s \u2013 nan) is covered for years nan.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "XXXXXX \u2013 6-digit number, no \"MADE IN USA\" stamp",
+      "years": "1961-1969",
+      "notes": "Year is based on number ranges, which often overlap between years.\nCan be very difficult to date precisely without looking at other features.\nHIGH AMBIGUITY. Serial number ranges were heavily reused across multiple years. The number alone is not a reliable indicator of the year. Dating requires checking other features.",
+      "source_notes": "https://truevintageguitar.com/pages/gibson-serial-number-lookup",
+      "answer": "This serial number pattern (XXXXXX \u2013 6-digit number, no \"MADE IN USA\" stamp) is covered for years 1961-1969.",
+      "clarifying_questions": [
+        "Is the serial number impressed (stamped) into the wood on the back of the headstock? Does the neck have a 'volute' (a carved flair) where it meets the headstock?"
+      ]
+    },
+    {
+      "pattern_description": "000001-099999 \u2013 6-digit number starting with '0'",
+      "years": "1967",
+      "notes": "A specific range for 1967 models.\nAll 6-digit numbers starting with 0 are from 1967.\nnan",
+      "source_notes": "https://truevintageguitar.com/pages/gibson-serial-number-lookup",
+      "answer": "This serial number pattern (000001-099999 \u2013 6-digit number starting with '0') is covered for years 1967.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "1970s \u2013 nan",
+      "years": "nan",
+      "notes": "nan\nnan\nnan",
+      "source_notes": "nan",
+      "answer": "This serial number pattern (1970s \u2013 nan) is covered for years nan.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "XXXXXX \u2013 6-digit number with \"MADE IN USA\" stamp",
+      "years": "1970-1975",
+      "notes": "Randomly assigned numbers, year is determined by ranges.\nThe \"MADE IN USA\" stamp is a key identifier for this period. Orange labels were replaced with white/orange rectangular labels in acoustic guitars.\nThis pattern can be mistaken for a 1960s serial number. The presence of the \"MADE IN USA\" stamp is the critical feature for identification.",
+      "source_notes": "https://truevintageguitar.com/blogs/tvg-blog/how-to-date-a-vintage-gibson-les-paul-guitar/",
+      "answer": "This serial number pattern (XXXXXX \u2013 6-digit number with \"MADE IN USA\" stamp) is covered for years 1970-1975.",
+      "clarifying_questions": [
+        "Is there a \"MADE IN USA\" stamp impressed into the wood, typically below the serial number?"
+      ]
+    },
+    {
+      "pattern_description": "99XXXXXX \u2013 8-digit number on a decal/sticker",
+      "years": "1975",
+      "notes": "1975 production year.\nFound on a decal on the back of the headstock.\nThis rule only applies if the number is on a decal. An impressed number with this pattern would not indicate 1975.",
+      "source_notes": "https://www.guitarcenter.com/riffs/gear-tips/guitars/gibson-serial-numbers-decoding",
+      "answer": "This serial number pattern (99XXXXXX \u2013 8-digit number on a decal/sticker) is covered for years 1975.",
+      "clarifying_questions": [
+        "Is the serial number on a visible decal or transfer (like a sticker), or is it physically impressed (stamped) into the wood?"
+      ]
+    },
+    {
+      "pattern_description": "00XXXXXX \u2013 8-digit number on a decal/sticker",
+      "years": "1976",
+      "notes": "1976 production year.\nFound on a decal on the back of the headstock.\nThis rule only applies if the number is on a decal. An impressed number with this pattern would not indicate 1976.",
+      "source_notes": "https://www.guitarcenter.com/riffs/gear-tips/guitars/gibson-serial-numbers-decoding",
+      "answer": "This serial number pattern (00XXXXXX \u2013 8-digit number on a decal/sticker) is covered for years 1976.",
+      "clarifying_questions": [
+        "Is the serial number on a visible decal or transfer (like a sticker), or is it physically impressed (stamped) into the wood?"
+      ]
+    },
+    {
+      "pattern_description": "06XXXXXX \u2013 8-digit number on a decal/sticker",
+      "years": "1977",
+      "notes": "1977 production year.\nFound on a decal on the back of the headstock.\nThis rule only applies if the number is on a decal. An impressed number with this pattern would not indicate 1977.",
+      "source_notes": "https://www.guitarcenter.com/riffs/gear-tips/guitars/gibson-serial-numbers-decoding",
+      "answer": "This serial number pattern (06XXXXXX \u2013 8-digit number on a decal/sticker) is covered for years 1977.",
+      "clarifying_questions": [
+        "Is the serial number on a visible decal or transfer (like a sticker), or is it physically impressed (stamped) into the wood?"
+      ]
+    },
+    {
+      "pattern_description": "Modern Era (1977-Present) \u2013 nan",
+      "years": "nan",
+      "notes": "nan\nnan\nnan",
+      "source_notes": "nan",
+      "answer": "This serial number pattern (Modern Era (1977-Present) \u2013 nan) is covered for years nan.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "YDDDYRRR \u2013 8-digit impressed number",
       "years": "1977-2005",
-      "notes": "Format YDDDYRRR. Y=last digit of year, DDD=day of year, RRR=factory ranking. The factory codes are key: Until 1984, 001-499 is Kalamazoo, 500-999 is Nashville. From 1989, Acoustics (Bozeman, MT) are 001-299 and Electrics (Nashville/Memphis) are 300-999.",
-      "source_notes": "Factory ranking details significantly enhanced with specific number ranges provided by TrueVintageGuitar.com. This improves the accuracy of the acoustic vs. electric question.",
-      "answer": null,
+      "notes": "Y=Year, DDD=Day of year, RRR=Factory Ranking.\nThe 1st and 5th digits indicate the year (e.g., 8xxx2xxx = 1982). Before 1984, 001-499 was Kalamazoo, 500-999 was Nashville.\nWhile the year is unambiguous, the factory designation (encoded in RRR) is only relevant for pre-1984 models. This does not affect dating the year of manufacture.",
+      "source_notes": "https://www.guitarcenter.com/riffs/gear-tips/guitars/gibson-serial-numbers-decoding",
+      "answer": "This serial number pattern (YDDDYRRR \u2013 8-digit impressed number) is covered for years 1977-2005.",
       "clarifying_questions": [
-        {
-          "question": "Is the serial number [serial_number] impressed into the back of the headstock, typically with a 'MADE IN USA' stamp below it?",
-          "purpose": "To confirm it follows the standard Gibson USA serialization method and is not an ink-stamped variant or other model type."
-        },
-        {
-          "question": "Is your Gibson with serial number [serial_number] an acoustic or an electric guitar? (For instruments made after 1989, this is crucial for determining the factory based on the last three digits).",
-          "purpose": "To identify the manufacturing plant (Bozeman for acoustics, Nashville/Memphis for electrics) for post-1989 models using the specific ranking number ranges."
-        }
+        "nan"
       ]
     },
     {
-      "pattern_description": "9-digit number (impressed)",
-      "years": "2005-2014 and Mid-2019-Present",
-      "notes": "Matches two recent Gibson USA eras. The format YDDDYBRRR (2005-2014) has a batch number 'B' as the 6th digit. The format YYDDDYRRRR (2019+) has the year as the first two digits.",
-      "source_notes": "Rule confirmed by TrueVintageGuitar.com. GuitarInsite.nl confirms the 2005-2014 portion but is less current on the 2019+ system.",
-      "answer": null,
+      "pattern_description": "YDDDYBRRR \u2013 9-digit impressed number",
+      "years": "2005-2014",
+      "notes": "Y=Year, DDD=Day of year, B=Batch number, RRR=Production number.\nThe 1st and 5th digits indicate the year. The 6th digit is a batch number (0 or 1).\nnan",
+      "source_notes": "https://www.guitarcenter.com/riffs/gear-tips/guitars/gibson-serial-numbers-decoding",
+      "answer": "This serial number pattern (YDDDYBRRR \u2013 9-digit impressed number) is covered for years 2005-2014.",
       "clarifying_questions": [
-        {
-          "question": "Looking at your 9-digit serial number [serial_number], is the year represented by the first digit alone (e.g., '8' for 2008) or the first two digits (e.g., '19' for 2019)?",
-          "purpose": "Distinguish between the YDDDYBRRR (2005-2014) and YYDDDYRRRR (2019-Present) formats."
-        }
+        "nan"
       ]
     },
     {
-      "pattern_description": "9-digit number (starts with model year)",
-      "years": "2014 - Mid 2019",
-      "notes": "Format is YYRRRRRRR, where YY is the model year and RRRRRRR is a sequential ranking number. Cannot be dated to a specific day. TrueVintageGuitar.com refers to this as 'The weird 2014 serial numbers.'",
-      "source_notes": "Rule confirmed by all sources.",
-      "answer": "This Gibson with serial number [serial_number] is a model year 20[YY] instrument, and was the [RRRRRRR]th in the production sequence for that year. This format was used from 2014 to mid-2019.",
-      "clarifying_questions": []
-    },
-    {
-      "pattern_description": "8-digit number (starts with '94')",
-      "years": "1994",
-      "notes": "An 8-digit serial starting with '94' could be a Centennial model or a standard model from 1994.",
-      "source_notes": "Rule confirmed by all sources.",
-      "answer": null,
+      "pattern_description": "YYMMDDFFFF \u2013 10-digit number",
+      "years": "2014-Present",
+      "notes": "YY=Year, MM=Month, DD=Day, FFFF=Factory Order Number.\nA more modern and easier to read format.\nnan",
+      "source_notes": "https://edgewaterguitars.com/guitar-serial-number-lookup/gibson/",
+      "answer": "This serial number pattern (YYMMDDFFFF \u2013 10-digit number) is covered for years 2014-Present.",
       "clarifying_questions": [
-        {
-          "question": "Your Gibson serial number [serial_number] starts with '94'. Does the guitar have any special 'Centennial' markings (e.g., '100th Anniversary' on the headstock)?",
-          "purpose": "To differentiate between a standard 1994 production model and a special Centennial edition, which used the '94' prefix followed by a unique 6-digit ranking number."
-        }
+        "nan"
       ]
     },
     {
-      "pattern_description": "Ink-Stamped number (Les Paul Classic, Reissues)",
-      "years": "Primarily 1989-2006",
-      "notes": "Ink-stamped serials are common on Les Paul Classics (Y RRRR or YY RRRR) but also on some Historic Reissues from the same period (M YYYY), creating potential ambiguity for 5-digit numbers.",
-      "source_notes": "Logic expanded based on TrueVintageGuitar.com, which points out the potential overlap between Les Paul Classic and Historic Reissue serials of the same length.",
-      "answer": null,
+      "pattern_description": "Les Paul Classic \u2013 nan",
+      "years": "nan",
+      "notes": "nan\nnan\nnan",
+      "source_notes": "nan",
+      "answer": "This serial number pattern (Les Paul Classic \u2013 nan) is covered for years nan.",
       "clarifying_questions": [
-        {
-          "question": "Your Gibson with ink-stamped serial [serial_number] could be one of a few models. Is it identified on the headstock or truss rod cover as a 'Classic' or a specific 'Reissue' model (e.g., ''60 Les Paul')?",
-          "purpose": "To distinguish between a Les Paul Classic (where the first 1-2 digits are the year) and a Historic Reissue (where the first digit indicates the model year being reissued)."
-        }
+        "nan"
       ]
     },
     {
-      "pattern_description": "Starts with 'CS'",
-      "years": "Modern Custom Shop Era",
-      "notes": "The format is typically CSYRRRR, where Y is a single digit for the production year. This creates ambiguity across decades (e.g., CS1xxxx could be 1991, 2001, or 2011). Physical features are necessary to determine the decade.",
-      "source_notes": "Rule confirmed by all sources.",
-      "answer": null,
+      "pattern_description": "Y_XXXX \u2013 1 digit (year) + space + 4 digits",
+      "years": "1989-1999",
+      "notes": "First digit is the last digit of the year.\nA \"Classic\" decal is usually on the headstock. 9 xxx only used in 1989.\nnan",
+      "source_notes": "https://www.guitarcenter.com/riffs/gear-tips/guitars/gibson-serial-numbers-decoding",
+      "answer": "This serial number pattern (Y_XXXX \u2013 1 digit (year) + space + 4 digits) is covered for years 1989-1999.",
       "clarifying_questions": [
-        {
-          "question": "The serial number [serial_number] indicates a Custom Shop model where the digit '[Y]' represents the year. Based on the guitar's specific features, color, and hardware, would you estimate it was made in 199[Y], 200[Y], or 201[Y]?",
-          "purpose": "To determine the correct decade for the single-digit year identifier in Custom Shop serial numbers."
-        }
+        "nan"
       ]
     },
     {
-      "pattern_description": "Custom Shop Reissue (Historic)",
-      "years": "Since 1992",
-      "notes": "Reissues have complex serial numbers that encode the original model year and the production year (e.g., M YRRR or YYRRRM). The format itself is the primary identifier.",
-      "source_notes": "Rule confirmed by all sources.",
-      "answer": "This Gibson Custom Shop Historic Reissue with serial number [serial_number] is a reissue of a 19[MM] model, and it was manufactured in the year [YYYY].",
-      "clarifying_questions": []
+      "pattern_description": "YYXXXX \u2013 2 digits (year) + 4 digits",
+      "years": "2000-2007",
+      "notes": "First two digits are the year.\nNo space in the serial number.\nThere is a minor conflict in sources regarding the end year (2005 vs. 2007). Guitars from this period may use this system or the 9-digit system that was being introduced.",
+      "source_notes": "https://www.guitarcenter.com/riffs/gear-tips/guitars/gibson-serial-numbers-decoding",
+      "answer": "This serial number pattern (YYXXXX \u2013 2 digits (year) + 4 digits) is covered for years 2000-2007.",
+      "clarifying_questions": [
+        "Does your guitar have a \"Classic\" or \"Les Paul Classic\" logo on the headstock or truss rod cover?"
+      ]
+    },
+    {
+      "pattern_description": "Custom Shop & Reissues \u2013 nan",
+      "years": "nan",
+      "notes": "nan\nnan\nnan",
+      "source_notes": "nan",
+      "answer": "This serial number pattern (Custom Shop & Reissues \u2013 nan) is covered for years nan.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "YYRRRM \u2013 6-digit number with model letter",
+      "years": "1997-Present",
+      "notes": "YY=Year, RRR=Ranking, M=Model Reissue.\nUsed for 1952-1960 Firebird, Les Paul, and SG reissues.\nnan",
+      "source_notes": "https://guitarinsite.nl/gibson-serial-number-lookup/",
+      "answer": "This serial number pattern (YYRRRM \u2013 6-digit number with model letter) is covered for years 1997-Present.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "(A_or_B)-MYRRR \u2013 Letter prefix, model, year, and ranking",
+      "years": "1995-Present",
+      "notes": "M=Model/Year Reissue, Y=Year, RRR=Ranking.\nThe 'A' or 'B' prefix is part of the serial.\nnan",
+      "source_notes": "https://guitarinsite.nl/gibson-serial-number-lookup/",
+      "answer": "This serial number pattern ((A_or_B)-MYRRR \u2013 Letter prefix, model, year, and ranking) is covered for years 1995-Present.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "YDDDYRRR \u2013 8-digit number",
+      "years": "Unknown",
+      "notes": "YY=Year, DDD=Day of Year, RRR=Ranking.\nUsed for carved top models.\nnan",
+      "source_notes": "https://guitarinsite.nl/gibson-serial-number-lookup/",
+      "answer": "This serial number pattern (YDDDYRRR \u2013 8-digit number) is covered for years Unknown.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "CSYRRRR \u2013 \"CS\" prefix, year, and ranking",
+      "years": "Unknown",
+      "notes": "CS=\"Custom Shop\", Y=Year, RRRR=Ranking.\nRegular production Custom Shop models.\nnan",
+      "source_notes": "https://guitarinsite.nl/gibson-serial-number-lookup/",
+      "answer": "This serial number pattern (CSYRRRR \u2013 \"CS\" prefix, year, and ranking) is covered for years Unknown.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "M_YRRR or MYRRRR \u2013 Model digit, year, and ranking",
+      "years": "1992-Present",
+      "notes": "M=Model Number, Y=Last digit of year, RRR(R)=Ranking.\nThe model digit corresponds to the last digit of the reissued year (e.g., 9 for a '59 reissue).\nThe leading 'M' digit indicates the year being reissued, not the year of manufacture, which can be confusing. The 'Y' digit indicates the actual year of production.",
+      "source_notes": "https://truevintageguitar.com/blogs/tvg-blog/how-to-date-a-vintage-gibson-les-paul-guitar/",
+      "answer": "This serial number pattern (M_YRRR or MYRRRR \u2013 Model digit, year, and ranking) is covered for years 1992-Present.",
+      "clarifying_questions": [
+        "Is there a space between the first digit and the rest of the serial number?"
+      ]
+    },
+    {
+      "pattern_description": "Other & Artist Models \u2013 nan",
+      "years": "nan",
+      "notes": "nan\nnan\nnan",
+      "source_notes": "nan",
+      "answer": "This serial number pattern (Other & Artist Models \u2013 nan) is covered for years nan.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "PF_XXX \u2013 \"PF\" prefix with a space",
+      "years": "Unknown",
+      "notes": "Sequential Numbering.\n\"PF\" stands for Peter Frampton.\nnan",
+      "source_notes": "https://www.guitarcenter.com/riffs/gear-tips/guitars/gibson-serial-numbers-decoding",
+      "answer": "This serial number pattern (PF_XXX \u2013 \"PF\" prefix with a space) is covered for years Unknown.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "PFYXXX \u2013 \"PF\" prefix, year, and ranking",
+      "years": "Unknown",
+      "notes": "Y=Year of production.\n\"PF\" stands for Peter Frampton.\nnan",
+      "source_notes": "https://www.guitarcenter.com/riffs/gear-tips/guitars/gibson-serial-numbers-decoding",
+      "answer": "This serial number pattern (PFYXXX \u2013 \"PF\" prefix, year, and ranking) is covered for years Unknown.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "250-TT-RR \u2013 \"250\" prefix with year and ranking",
+      "years": "Unknown",
+      "notes": "TT=Year, RR=Ranking.\n\"250\" denotes the model.\nnan",
+      "source_notes": "https://guitarinsite.nl/gibson-serial-number-lookup/",
+      "answer": "This serial number pattern (250-TT-RR \u2013 \"250\" prefix with year and ranking) is covered for years Unknown.",
+      "clarifying_questions": [
+        "nan"
+      ]
+    },
+    {
+      "pattern_description": "S(S)-YYMM-RR \u2013 Style prefix, year, month, and ranking",
+      "years": "Unknown",
+      "notes": "S(S)=Style, YY=Year, MM=Month, RR=Ranking.\nUsed on various other Gibson models.\nnan",
+      "source_notes": "https://guitarinsite.nl/gibson-serial-number-lookup/",
+      "answer": "This serial number pattern (S(S)-YYMM-RR \u2013 Style prefix, year, month, and ranking) is covered for years Unknown.",
+      "clarifying_questions": [
+        "nan"
+      ]
     }
   ]
 }
