@@ -135,13 +135,7 @@ const ChatLookup = () => {
     reconstructedMessages.push({
       id: Date.now(),
       isRandy: true,
-      text: "Hey there! I'm Randy, your guitar specialist. I'd love to help you discover your guitar's history! 🎸",
-    });
-
-    reconstructedMessages.push({
-      id: Date.now() + 1,
-      isRandy: true,
-      text: "First things first - what brand is your guitar? You can select from the list or type it in.",
+      text: "Hey there! I'm Randy Researcher, your guitar specialist. 🎸 First things first - what brand is your guitar?",
     });
 
     // Add brand selection
@@ -235,12 +229,7 @@ const ChatLookup = () => {
       {
         id: Date.now(),
         isRandy: true,
-        text: "Hey there! I'm Randy, your guitar specialist. I'd love to help you discover your guitar's history! 🎸",
-      },
-      {
-        id: Date.now() + 1,
-        isRandy: true,
-        text: "First things first - what brand is your guitar? You can select from the list or type it in.",
+        text: "Hey there! I'm Randy Researcher, your guitar specialist. 🎸 First things first - what brand is your guitar?",
       },
     ];
     setMessages(initialMessages);
@@ -657,8 +646,16 @@ const ChatLookup = () => {
                     >
                       <option value="">-- Choose a brand --</option>
                       {options.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
+                        <option
+                          key={opt.value}
+                          value={opt.value}
+                          disabled={opt.value !== "gibson"}
+                          className={
+                            opt.value !== "gibson" ? styles.disabledOption : ""
+                          }
+                        >
+                          {opt.label}{" "}
+                          {opt.value !== "gibson" ? "(Coming Soon)" : ""}
                         </option>
                       ))}
                     </select>
