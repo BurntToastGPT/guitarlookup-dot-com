@@ -28,6 +28,7 @@ const ChatLookup = () => {
     clarificationQuestion: null,
     result: null,
   });
+  const [isShowingResults, setIsShowingResults] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [options, setOptions] = useState([]);
   const [showSourcesModal, setShowSourcesModal] = useState(false);
@@ -322,6 +323,9 @@ const ChatLookup = () => {
     const currentSerial = inputValue.trim();
     console.log("1. Starting serial submission:", currentSerial);
 
+    // Reset results flag for new submission
+    setIsShowingResults(false);
+
     // Add user message
     console.log("2. Adding user message");
     addMessage(currentSerial, false);
@@ -481,17 +485,22 @@ const ChatLookup = () => {
       }
     }, 500);
   };
-
   const showResults = (result) => {
     try {
       console.log("Showing results:", result);
+
+      // Prevent double display
+      if (isShowingResults) {
+        console.log("Results already being shown, skipping duplicate call");
+        return;
+      }
+
+      setIsShowingResults(true);
 
       // Validate result object
       if (!result || typeof result !== "object") {
         throw new Error("Invalid result object provided to showResults");
       }
-
-      setSessionData((prev) => ({ ...prev, result }));
 
       const brandName =
         brandsData.brands.find((b) => b.id === sessionData.brand)
@@ -514,7 +523,10 @@ const ChatLookup = () => {
       console.log("Adding intro message:", introMessage);
       addMessage(introMessage, true);
 
-      // Add results message after delay with error handling
+      // Update session data first
+      setSessionData((prev) => ({ ...prev, result }));
+
+      // Add results display after a brief delay to ensure state update
       setTimeout(() => {
         try {
           console.log("Adding results display message");
@@ -528,7 +540,7 @@ const ChatLookup = () => {
           );
           setCurrentStep("complete");
         }
-      }, 800);
+      }, 200);
     } catch (error) {
       console.error("Critical error in showResults:", error, { result });
 
@@ -547,9 +559,9 @@ const ChatLookup = () => {
       }
     }
   };
-
   const handleNewLookup = () => {
     const newSessionId = generateSessionId();
+    setIsShowingResults(false); // Reset flag for new lookup
     navigate(`/lookup/${newSessionId}`);
     window.location.reload(); // Fresh start
   };
@@ -612,202 +624,205 @@ const ChatLookup = () => {
                   message={msg.text}
                   showResults={msg.showResults}
                 >
-                  {msg.showResults && sessionData.result && (
-                    <div className={styles.resultsCard}>
-                      <h3 className={styles.resultsTitle}>
-                        Your{" "}
-                        {
-                          brandsData.brands.find(
+                  {msg.showResults &&
+                    sessionData.result &&
+                    typeof sessionData.result === "object" && (
+                      <div className={styles.resultsCard}>
+                        <h3 className={styles.resultsTitle}>
+                          Your{" "}
+                          {brandsData.brands.find(
                             (b) => b.id === sessionData.brand
-                          )?.displayName
-                        }{" "}
-                        Details:
-                      </h3>
+                          )?.displayName || "Unknown"}{" "}
+                          Details:
+                        </h3>
 
-                      {/* Show decoded values section if available */}
-                      {sessionData.result.decodedValues &&
-                        typeof sessionData.result.decodedValues === "object" &&
-                        sessionData.result.decodedValues !== null && (
-                          <div className={styles.decodedSection}>
-                            <h4 className={styles.decodedTitle}>
-                              🔍 Decoded from serial number:{" "}
-                              {sessionData.serialNumber || "N/A"}
-                            </h4>
-                            {Object.entries(sessionData.result.decodedValues)
-                              .filter(
-                                ([key, value]) =>
-                                  value != null && value !== undefined
-                              )
-                              .map(([key, value]) => (
-                                <div key={key} className={styles.resultItem}>
-                                  <span className={styles.label}>{key}:</span>
+                        {/* Show decoded values section if available */}
+                        {sessionData.result?.decodedValues &&
+                          typeof sessionData.result.decodedValues ===
+                            "object" &&
+                          sessionData.result.decodedValues !== null && (
+                            <div className={styles.decodedSection}>
+                              <h4 className={styles.decodedTitle}>
+                                🔍 Decoded from serial number:{" "}
+                                {sessionData.serialNumber || "N/A"}
+                              </h4>
+                              {Object.entries(sessionData.result.decodedValues)
+                                .filter(
+                                  ([key, value]) =>
+                                    value != null && value !== undefined
+                                )
+                                .map(([key, value]) => (
+                                  <div key={key} className={styles.resultItem}>
+                                    <span className={styles.label}>{key}:</span>
+                                    <span className={styles.value}>
+                                      {String(value)}
+                                    </span>
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+
+                        {/* Standard result fields */}
+                        {!sessionData.result?.decodedValues && (
+                          <>
+                            <div className={styles.resultItem}>
+                              <span className={styles.label}>📅 Year(s):</span>
+                              <span className={styles.value}>
+                                {sessionData.result?.years
+                                  ? Array.isArray(sessionData.result?.years)
+                                    ? sessionData.result?.years.join(" - ")
+                                    : String(sessionData.result?.years)
+                                  : "Unknown"}
+                              </span>
+                            </div>
+
+                            {sessionData.result?.exactDate &&
+                              typeof sessionData.result.exactDate ===
+                                "object" &&
+                              sessionData.result.exactDate?.month &&
+                              sessionData.result.exactDate?.day &&
+                              sessionData.result.exactDate?.year && (
+                                <div className={styles.resultItem}>
+                                  <span className={styles.label}>
+                                    📆 Exact Date:
+                                  </span>
                                   <span className={styles.value}>
-                                    {String(value)}
+                                    {sessionData.result.exactDate.month}{" "}
+                                    {sessionData.result.exactDate.day},{" "}
+                                    {sessionData.result.exactDate.year}
                                   </span>
                                 </div>
-                              ))}
-                          </div>
+                              )}
+
+                            {sessionData.result?.country &&
+                              sessionData.result.country !== "Unknown" && (
+                                <div className={styles.resultItem}>
+                                  <span className={styles.label}>
+                                    🌍 Country:
+                                  </span>
+                                  <span className={styles.value}>
+                                    {sessionData.result.country}
+                                  </span>
+                                </div>
+                              )}
+
+                            {sessionData.result?.factory &&
+                              sessionData.result.factory !== "Not available" &&
+                              sessionData.result.factory !==
+                                "Not specified" && (
+                                <div className={styles.resultItem}>
+                                  <span className={styles.label}>
+                                    🏭 Factory:
+                                  </span>
+                                  <span className={styles.value}>
+                                    {sessionData.result.factory}
+                                  </span>
+                                </div>
+                              )}
+
+                            {sessionData.result?.productionNumber && (
+                              <div className={styles.resultItem}>
+                                <span className={styles.label}>
+                                  🔢 Production #:
+                                </span>
+                                <span className={styles.value}>
+                                  {sessionData.result.productionContext ||
+                                    `#${
+                                      sessionData.result?.productionNumber ||
+                                      "Unknown"
+                                    }`}
+                                </span>
+                              </div>
+                            )}
+
+                            {sessionData.result?.batchNumber && (
+                              <div className={styles.resultItem}>
+                                <span className={styles.label}>📦 Batch:</span>
+                                <span className={styles.value}>
+                                  {sessionData.result?.batchNumber}
+                                </span>
+                              </div>
+                            )}
+
+                            {sessionData.result?.model && (
+                              <div className={styles.resultItem}>
+                                <span className={styles.label}>🎸 Model:</span>
+                                <span className={styles.value}>
+                                  {sessionData.result?.model}
+                                </span>
+                              </div>
+                            )}
+
+                            {sessionData.result?.modelNotes && (
+                              <div className={styles.resultItem}>
+                                <span className={styles.label}>
+                                  ✨ Special Edition:
+                                </span>
+                                <span className={styles.value}>
+                                  {sessionData.result?.modelNotes}
+                                </span>
+                              </div>
+                            )}
+                          </>
                         )}
 
-                      {/* Standard result fields */}
-                      {!sessionData.result.decodedValues && (
-                        <>
-                          <div className={styles.resultItem}>
-                            <span className={styles.label}>📅 Year(s):</span>
-                            <span className={styles.value}>
-                              {sessionData.result.years
-                                ? Array.isArray(sessionData.result.years)
-                                  ? sessionData.result.years.join(" - ")
-                                  : String(sessionData.result.years)
-                                : "Unknown"}
-                            </span>
-                          </div>
+                        <div className={styles.resultItem}>
+                          <span className={styles.label}>🎯 Confidence:</span>
+                          <span
+                            className={`${styles.value} ${
+                              sessionData.result?.confidence &&
+                              typeof sessionData.result.confidence === "string"
+                                ? styles[
+                                    sessionData.result.confidence.toLowerCase()
+                                  ] || ""
+                                : ""
+                            }`}
+                          >
+                            {sessionData.result?.confidence || "Unknown"}
+                          </span>
+                        </div>
 
-                          {sessionData.result.exactDate &&
-                            typeof sessionData.result.exactDate === "object" &&
-                            sessionData.result.exactDate.month &&
-                            sessionData.result.exactDate.day &&
-                            sessionData.result.exactDate.year && (
-                              <div className={styles.resultItem}>
-                                <span className={styles.label}>
-                                  📆 Exact Date:
-                                </span>
-                                <span className={styles.value}>
-                                  {sessionData.result.exactDate.month}{" "}
-                                  {sessionData.result.exactDate.day},{" "}
-                                  {sessionData.result.exactDate.year}
-                                </span>
-                              </div>
-                            )}
-
-                          {sessionData.result.country &&
-                            sessionData.result.country !== "Unknown" && (
-                              <div className={styles.resultItem}>
-                                <span className={styles.label}>
-                                  🌍 Country:
-                                </span>
-                                <span className={styles.value}>
-                                  {sessionData.result.country}
-                                </span>
-                              </div>
-                            )}
-
-                          {sessionData.result.factory &&
-                            sessionData.result.factory !== "Not available" &&
-                            sessionData.result.factory !== "Not specified" && (
-                              <div className={styles.resultItem}>
-                                <span className={styles.label}>
-                                  🏭 Factory:
-                                </span>
-                                <span className={styles.value}>
-                                  {sessionData.result.factory}
-                                </span>
-                              </div>
-                            )}
-
-                          {sessionData.result.productionNumber && (
-                            <div className={styles.resultItem}>
-                              <span className={styles.label}>
-                                🔢 Production #:
-                              </span>
-                              <span className={styles.value}>
-                                {sessionData.result.productionContext ||
-                                  `#${
-                                    sessionData.result.productionNumber ||
-                                    "Unknown"
-                                  }`}
-                              </span>
-                            </div>
-                          )}
-
-                          {sessionData.result.batchNumber && (
-                            <div className={styles.resultItem}>
-                              <span className={styles.label}>📦 Batch:</span>
-                              <span className={styles.value}>
-                                {sessionData.result.batchNumber}
-                              </span>
-                            </div>
-                          )}
-
-                          {sessionData.result.model && (
-                            <div className={styles.resultItem}>
-                              <span className={styles.label}>🎸 Model:</span>
-                              <span className={styles.value}>
-                                {sessionData.result.model}
-                              </span>
-                            </div>
-                          )}
-
-                          {sessionData.result.modelNotes && (
-                            <div className={styles.resultItem}>
-                              <span className={styles.label}>
-                                ✨ Special Edition:
-                              </span>
-                              <span className={styles.value}>
-                                {sessionData.result.modelNotes}
-                              </span>
-                            </div>
-                          )}
-                        </>
-                      )}
-
-                      <div className={styles.resultItem}>
-                        <span className={styles.label}>🎯 Confidence:</span>
-                        <span
-                          className={`${styles.value} ${
-                            sessionData.result.confidence &&
-                            typeof sessionData.result.confidence === "string"
-                              ? styles[
-                                  sessionData.result.confidence.toLowerCase()
-                                ] || ""
-                              : ""
-                          }`}
-                        >
-                          {sessionData.result.confidence || "Unknown"}
-                        </span>
-                      </div>
-
-                      <div className={styles.ruleSection}>
-                        <p className={styles.ruleLabel}>
-                          How I figured this out:
-                        </p>
-                        <p className={styles.ruleText}>
-                          {sessionData.result.rule ||
-                            "Analysis completed based on serial number pattern."}
-                        </p>
-                      </div>
-
-                      {(sessionData.result.confidence !== "High" ||
-                        sessionData.result.error ||
-                        sessionData.result.ambiguityNotes) && (
-                        <div className={styles.uncertaintyNote}>
-                          <p>
-                            💡 <strong>Note:</strong>{" "}
-                            {sessionData.result.error
-                              ? "We couldn't decode this serial number format. Please verify the serial number or contact the manufacturer."
-                              : sessionData.result.ambiguityNotes
-                              ? sessionData.result.ambiguityNotes
-                              : "Serial number dating can be complex. For the most accurate information, I'd recommend contacting " +
-                                (brandsData.brands.find(
-                                  (b) => b.id === sessionData.brand
-                                )?.displayName || "the manufacturer") +
-                                " directly or consulting with a vintage guitar expert."}
+                        <div className={styles.ruleSection}>
+                          <p className={styles.ruleLabel}>
+                            How I figured this out:
+                          </p>
+                          <p className={styles.ruleText}>
+                            {sessionData.result?.rule ||
+                              "Analysis completed based on serial number pattern."}
                           </p>
                         </div>
-                      )}
 
-                      {sessionData.result.sources &&
-                        Array.isArray(sessionData.result.sources) &&
-                        sessionData.result.sources.length > 0 && (
-                          <button
-                            className={styles.sourcesButton}
-                            onClick={handleShowSources}
-                          >
-                            See sources
-                          </button>
+                        {(sessionData.result?.confidence !== "High" ||
+                          sessionData.result?.error ||
+                          sessionData.result?.ambiguityNotes) && (
+                          <div className={styles.uncertaintyNote}>
+                            <p>
+                              💡 <strong>Note:</strong>{" "}
+                              {sessionData.result.error
+                                ? "We couldn't decode this serial number format. Please verify the serial number or contact the manufacturer."
+                                : sessionData.result.ambiguityNotes
+                                ? sessionData.result.ambiguityNotes
+                                : "Serial number dating can be complex. For the most accurate information, I'd recommend contacting " +
+                                  (brandsData.brands.find(
+                                    (b) => b.id === sessionData.brand
+                                  )?.displayName || "the manufacturer") +
+                                  " directly or consulting with a vintage guitar expert."}
+                            </p>
+                          </div>
                         )}
-                    </div>
-                  )}
+
+                        {sessionData.result.sources &&
+                          Array.isArray(sessionData.result.sources) &&
+                          sessionData.result.sources.length > 0 && (
+                            <button
+                              className={styles.sourcesButton}
+                              onClick={handleShowSources}
+                            >
+                              See sources
+                            </button>
+                          )}
+                      </div>
+                    )}
                 </ChatMessage>
               ))}
 

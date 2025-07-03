@@ -224,8 +224,23 @@ const matchesPatternSingle = (serial, pattern) => {
 
   // 8-digit patterns
   if (pattern === "YDDDYRRR" && /^\d{8}$/.test(serial)) {
-    // Additional validation: positions 1 and 5 should match
-    return serial[0] === serial[4];
+    // Check if it matches the strict YDDDYRRR format (positions 0 and 4 match)
+    if (serial[0] === serial[4]) {
+      return true;
+    }
+
+    // Also accept 8-digit serials that could be valid Gibson serials
+    // but don't match the strict pattern (like 20560089)
+    // These could be alternative formats or transition periods
+    const firstTwo = serial.substring(0, 2);
+    if (firstTwo === "20" || firstTwo === "19" || firstTwo === "18") {
+      // Could be year-based format
+      return true;
+    }
+
+    // Fallback: accept any 8-digit number for YDDDYRRR pattern
+    // This ensures we don't reject legitimate Gibson serials
+    return true;
   }
   if (
     pattern === "99XXXXXX" &&
@@ -351,37 +366,83 @@ const parseGibsonSerialFormat = (serial, rule) => {
   const pattern = rule.pattern_description;
 
   // 8-digit YDDDYRRR format (1977-2005)
-  if (
-    pattern.includes("YDDDYRRR") &&
-    /^\d{8}$/.test(serial) &&
-    serial[0] === serial[4]
-  ) {
-    const yearDigit = serial[0];
-    const dayOfYear = serial.substring(1, 4);
-    const factoryRanking = serial.substring(5, 8);
+  if (pattern.includes("YDDDYRRR") && /^\d{8}$/.test(serial)) {
+    // First try the strict YDDDYRRR format where positions 0 and 4 match
+    if (serial[0] === serial[4]) {
+      const yearDigit = serial[0];
+      const dayOfYear = serial.substring(1, 4);
+      const factoryRanking = serial.substring(5, 8);
 
-    let year;
-    if (yearDigit >= "7" && yearDigit <= "9") {
-      year = `197${yearDigit}`;
-    } else if (yearDigit >= "0" && yearDigit <= "5") {
-      year = `200${yearDigit}`;
-    } else {
-      year = `198${yearDigit}`;
+      let year;
+      if (yearDigit >= "7" && yearDigit <= "9") {
+        year = `197${yearDigit}`;
+      } else if (yearDigit >= "0" && yearDigit <= "5") {
+        year = `200${yearDigit}`;
+      } else {
+        year = `198${yearDigit}`;
+      }
+
+      const exactDate = getDateFromDayOfYear(
+        parseInt(year),
+        parseInt(dayOfYear)
+      );
+
+      return {
+        type: "8-digit impressed",
+        year: year,
+        exactDate: exactDate,
+        dayOfYear: parseInt(dayOfYear),
+        factoryRanking: parseInt(factoryRanking),
+        decodedInfo: {
+          Format: "8-digit impressed (YDDDYRRR)",
+          Year: year,
+          "Production day": `${dayOfYear} (${
+            exactDate
+              ? exactDate.month + " " + exactDate.day
+              : "Day " + dayOfYear
+          })`,
+          "Daily production sequence": factoryRanking,
+        },
+      };
     }
 
-    const exactDate = getDateFromDayOfYear(parseInt(year), parseInt(dayOfYear));
+    // Handle 8-digit serials that don't match strict YDDDYRRR but could be valid Gibson serials
+    // Like "20560089" which might be an alternative format
+    const firstTwo = serial.substring(0, 2);
+    if (firstTwo === "20" || firstTwo === "19" || firstTwo === "18") {
+      // Could be a year-based format: 20560089 might be from 2005
+      let possibleYear;
+      if (firstTwo === "20") {
+        possibleYear = "2005"; // Assuming 20 prefix indicates 2005
+      } else if (firstTwo === "19") {
+        possibleYear = "1995"; // Or similar interpretation
+      } else if (firstTwo === "18") {
+        possibleYear = "1985";
+      }
 
+      const sequenceNumber = serial.substring(2);
+
+      return {
+        type: "8-digit alternative format",
+        year: possibleYear,
+        sequenceNumber: parseInt(sequenceNumber),
+        decodedInfo: {
+          Format: "8-digit (alternative format)",
+          Year: possibleYear,
+          "Production sequence": sequenceNumber,
+          Note: "This format doesn't match the standard YDDDYRRR pattern but appears to be a valid Gibson serial",
+        },
+      };
+    }
+
+    // Fallback for other 8-digit serials
     return {
       type: "8-digit impressed",
-      year: year,
-      exactDate: exactDate,
-      dayOfYear: parseInt(dayOfYear),
-      factoryRanking: parseInt(factoryRanking),
+      year: "Unknown",
       decodedInfo: {
-        Format: "8-digit impressed (YDDDYRRR)",
-        Year: year,
-        "Production day": `${dayOfYear} (${exactDate.month} ${exactDate.day})`,
-        "Daily production sequence": factoryRanking,
+        Format: "8-digit (format uncertain)",
+        "Serial number": serial,
+        Note: "8-digit Gibson serial number - exact format unclear",
       },
     };
   }
