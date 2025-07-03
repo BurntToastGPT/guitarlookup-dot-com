@@ -1,12 +1,17 @@
 import React from "react";
 import styles from "../../styles/components/ChatMessage.module.css";
 
-const ChatMessage = ({ message, isRandy = false, children }) => {
+const ChatMessage = ({
+  message,
+  isRandy = false,
+  children,
+  showResults = false,
+}) => {
   return (
     <div
       className={`${styles.messageWrapper} ${
         isRandy ? styles.randy : styles.user
-      }`}
+      } ${showResults ? styles.resultsMessage : ""}`}
     >
       {isRandy && (
         <div className={styles.avatar}>

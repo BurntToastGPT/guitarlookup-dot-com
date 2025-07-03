@@ -234,12 +234,15 @@ const Results = () => {
                   </div>
 
                   {(decodingResult.confidence !== "High" ||
-                    decodingResult.error) && (
+                    decodingResult.error ||
+                    decodingResult.ambiguityNotes) && (
                     <div className={styles.uncertaintyNote}>
                       <p>
                         💡 <strong>Note:</strong>{" "}
                         {decodingResult.error
                           ? "We couldn't decode this serial number format. Please verify the serial number or contact the manufacturer."
+                          : decodingResult.ambiguityNotes
+                          ? decodingResult.ambiguityNotes
                           : "Serial number dating can be complex. For the most accurate information, I'd recommend contacting " +
                             brandName +
                             " directly or consulting with a vintage guitar expert."}
@@ -317,6 +320,11 @@ const Results = () => {
                 {decodingResult.notes && (
                   <p className={styles.notesText}>
                     <em>Note: {decodingResult.notes}</em>
+                  </p>
+                )}
+                {decodingResult.ambiguityNotes && (
+                  <p className={styles.notesText}>
+                    <em>⚠️ Important: {decodingResult.ambiguityNotes}</em>
                   </p>
                 )}
               </section>

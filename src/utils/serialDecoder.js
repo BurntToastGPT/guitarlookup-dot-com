@@ -9,29 +9,52 @@ const replacePlaceholder = (text, serial) => {
 
 // Helper function to calculate exact date from day of year
 const getDateFromDayOfYear = (year, dayOfYear) => {
-  const date = new Date(year, 0); // January 1st
-  date.setDate(dayOfYear);
+  try {
+    // Validate inputs
+    if (!year || !dayOfYear || dayOfYear < 1 || dayOfYear > 366) {
+      console.warn("Invalid date parameters:", { year, dayOfYear });
+      return null;
+    }
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+    const date = new Date(year, 0); // January 1st
+    date.setDate(dayOfYear);
 
-  return {
-    month: months[date.getMonth()],
-    day: date.getDate(),
-    year: year,
-  };
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      console.warn("Invalid date created:", { year, dayOfYear });
+      return null;
+    }
+
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    const monthIndex = date.getMonth();
+    if (monthIndex < 0 || monthIndex >= months.length) {
+      console.warn("Invalid month index:", monthIndex);
+      return null;
+    }
+
+    return {
+      month: months[monthIndex],
+      day: date.getDate(),
+      year: year,
+    };
+  } catch (error) {
+    console.error("Error in getDateFromDayOfYear:", error, { year, dayOfYear });
+    return null;
+  }
 };
 
 // Helper function to extract year info from rule answers
@@ -52,7 +75,7 @@ const extractYearFromAnswer = (answer, serial) => {
   // Extract actual year values from serial if possible
   if (serial.length === 8 && /^\d{8}$/.test(serial)) {
     const yearDigit = serial[0];
-    const decade = yearDigit >= "7" ? "197" : "198";
+    const decade = yearDigit >= "7" ? "197" : "188";
     processedAnswer = processedAnswer.replace(/\[year\]/g, decade + yearDigit);
   } else if (serial.length === 9 && /^\d{9}$/.test(serial)) {
     const yearCode = serial.substring(0, 2);
@@ -61,6 +84,218 @@ const extractYearFromAnswer = (answer, serial) => {
   }
 
   return processedAnswer;
+};
+
+// Helper function to convert a serial number to a placeholder pattern
+const serialToPlaceholderPattern = (serial) => {
+  // This function converts a serial like "B123456" to "A000000"
+  // or "CS12345" to "CSXXXXX", etc.
+
+  let pattern = "";
+  let i = 0;
+
+  while (i < serial.length) {
+    const char = serial[i];
+
+    // Check for specific prefixes first
+    if (i === 0) {
+      // Check for multi-character prefixes
+      const twoChar = serial.substring(0, 2).toUpperCase();
+      const threeChar = serial.substring(0, 3).toUpperCase();
+
+      if (twoChar === "CS") {
+        pattern += "CS";
+        i += 2;
+        continue;
+      } else if (twoChar === "PF") {
+        pattern += "PF";
+        i += 2;
+        continue;
+      } else if (threeChar === "250") {
+        pattern += "250";
+        i += 3;
+        continue;
+      }
+    }
+
+    // Handle spaces
+    if (char === " " || char === "-") {
+      pattern += "_";
+    }
+    // Handle letters
+    else if (/[A-Za-z]/.test(char)) {
+      // For single letters in patterns, use the position-based placeholder
+      if (i === 0 && serial.length > 1 && !/[A-Za-z]/.test(serial[1])) {
+        // First character is a letter followed by non-letter = single letter prefix
+        pattern += "Z"; // Using Z as placeholder for single letter prefix
+      } else if (
+        i === serial.length - 1 &&
+        i > 0 &&
+        !/[A-Za-z]/.test(serial[i - 1])
+      ) {
+        // Last character is a letter preceded by non-letter = letter suffix
+        pattern += "A"; // Using A as placeholder for letter suffix
+      } else {
+        // Generic letter
+        pattern += char.toUpperCase();
+      }
+    }
+    // Handle digits
+    else if (/\d/.test(char)) {
+      // Look ahead to see if this is part of a specific year pattern
+      if (i === 0 && serial.length >= 8) {
+        const firstTwo = serial.substring(0, 2);
+        if (
+          firstTwo === "94" ||
+          firstTwo === "99" ||
+          firstTwo === "00" ||
+          firstTwo === "06"
+        ) {
+          // These are specific year prefixes in the patterns
+          pattern += firstTwo;
+          i += 2;
+          continue;
+        }
+      }
+
+      // For year-based patterns, check if it's a year digit in specific positions
+      if (i === 0 && serial.length > 4 && /\d\s\d{4}/.test(serial)) {
+        // Pattern like "Y XXXX" - first digit is year
+        pattern += "Y";
+      } else if (i === 0 && serial.length === 8 && /^\d{8}$/.test(serial)) {
+        // 8-digit pattern where first digit might be year
+        pattern += "Y";
+      } else {
+        pattern += "0";
+      }
+    }
+
+    i++;
+  }
+
+  return pattern;
+};
+
+// Helper function to match a serial against a pattern description
+const matchesPattern = (serial, patternDescription) => {
+  // Extract the pattern part before the "–"
+  const patternMatch = patternDescription.match(/^([^–]+)(?:\s*–)/);
+  if (!patternMatch) return false;
+
+  const patternPart = patternMatch[1].trim();
+
+  // Handle special cases
+  if (patternPart.includes(" or ")) {
+    // Multiple patterns separated by "or"
+    const patterns = patternPart.split(" or ").map((p) => p.trim());
+    return patterns.some((p) => matchesPatternSingle(serial, p));
+  }
+
+  return matchesPatternSingle(serial, patternPart);
+};
+
+// Helper function to match a serial against a single pattern
+const matchesPatternSingle = (serial, pattern) => {
+  const upperSerial = serial.toUpperCase();
+
+  // Direct pattern matching for specific formats
+
+  // Handle range patterns like "000001-099999"
+  if (pattern.includes("-") && /^\d+-\d+$/.test(pattern.replace(/,/g, ""))) {
+    const [start, end] = pattern.split("-").map((p) => parseInt(p));
+    const serialNum = parseInt(serial);
+    return !isNaN(serialNum) && serialNum >= start && serialNum <= end;
+  }
+
+  // XXXX or XXXXX patterns (3-5 digits)
+  if (pattern === "XXXX" && /^\d{4}$/.test(serial)) return true;
+  if (pattern === "XXXXX" && /^\d{5}$/.test(serial)) return true;
+  if (pattern === "XXXXXX" && /^\d{6}$/.test(serial)) return true;
+
+  // Letter + digits patterns
+  if (pattern === "XXXXA" && /^\d{4}[A-Z]$/i.test(serial)) return true;
+  if (pattern === "ZXXXX_XX" && /^[A-Z]\d{4}[\s\-_]\d{2}$/i.test(serial))
+    return true;
+  if (pattern === "A_XXXX" && /^A[\s\-_]\d{4}$/i.test(serial)) return true;
+
+  // Year patterns
+  if (pattern === "Y_XXXX" && /^\d[\s\-_]\d{4}$/i.test(serial)) return true;
+  if (pattern === "Y_XXXXX" && /^\d[\s\-_]\d{5}$/i.test(serial)) return true;
+
+  // 8-digit patterns
+  if (pattern === "YDDDYRRR" && /^\d{8}$/.test(serial)) {
+    // Additional validation: positions 1 and 5 should match
+    return serial[0] === serial[4];
+  }
+  if (
+    pattern === "99XXXXXX" &&
+    serial.startsWith("99") &&
+    /^\d{8}$/.test(serial)
+  )
+    return true;
+  if (
+    pattern === "00XXXXXX" &&
+    serial.startsWith("00") &&
+    /^\d{8}$/.test(serial)
+  )
+    return true;
+  if (
+    pattern === "06XXXXXX" &&
+    serial.startsWith("06") &&
+    /^\d{8}$/.test(serial)
+  )
+    return true;
+
+  // 9-digit patterns
+  if (pattern === "YDDDYBRRR" && /^\d{9}$/.test(serial)) {
+    // Check if it's a valid 2005-2014 format
+    // The pattern is more complex than just matching positions
+    const firstDigit = serial[0];
+    const fifthDigit = serial[4];
+
+    // For 2005-2014 format, we need to check if it makes sense as a date
+    const dayOfYear = parseInt(serial.substring(0, 4));
+    const potentialYear = parseInt(serial.substring(4, 5));
+
+    // Day of year should be valid (1-366)
+    if (dayOfYear >= 1 && dayOfYear <= 366) {
+      // This could be a valid format where day comes first
+      return true;
+    }
+
+    // Original format where year digit is at positions 0 and 4
+    return firstDigit === fifthDigit;
+  }
+
+  // 10-digit pattern
+  if (pattern === "YYMMDDFFFF" && /^\d{10}$/.test(serial)) return true;
+
+  // Les Paul Classic patterns
+  if (pattern === "YYXXXX" && /^\d{6}$/.test(serial)) {
+    const year = parseInt(serial.substring(0, 2));
+    return year >= 0 && year <= 99;
+  }
+
+  // Custom Shop patterns
+  if (pattern === "YYRRRM" && /^\d{5}[A-Z]$/i.test(serial)) return true;
+  if (pattern === "(A_or_B)-MYRRR" && /^[AB][\-]\d[A-Z]\d{3}$/i.test(serial))
+    return true;
+  if (pattern === "CSYRRRR" && /^CS\d{5}$/i.test(serial)) return true;
+  if (pattern === "M_YRRR" && /^[A-Z][\s\-_]\d{4}$/i.test(serial)) return true;
+  if (pattern === "MYRRRR" && /^[A-Z]\d{5}$/i.test(serial)) return true;
+
+  // Other patterns
+  if (pattern === "PF_XXX" && /^PF[\s\-_]\d{3}$/i.test(serial)) return true;
+  if (pattern === "PFYXXX" && /^PF\d{4}$/i.test(serial)) return true;
+  if (pattern === "250-TT-RR" && /^250[\-]\d{2}[\-]\d{2}$/i.test(serial))
+    return true;
+  if (
+    pattern === "S(S)-YYMM-RR" &&
+    /^[A-Z]{1,2}[\-]\d{4}[\-]\d{2}$/i.test(serial)
+  )
+    return true;
+
+  return false;
 };
 
 export const decodeFenderSerial = (serial) => {
@@ -111,183 +346,259 @@ export const decodeFenderSerial = (serial) => {
   };
 };
 
-// Helper function to parse Gibson Custom Shop serials
-const parseCustomShopSerial = (serial) => {
-  const upperSerial = serial.toUpperCase();
+// Helper function to parse specific serial formats for detailed decoding
+const parseGibsonSerialFormat = (serial, rule) => {
+  const pattern = rule.pattern_description;
 
-  if (upperSerial.startsWith("CS")) {
-    // Format: CSYRRRR where Y is year digit, RRRR is ranking
-    const yearDigit = serial[2];
-    const ranking = serial.substring(3);
-
-    return {
-      format: "Custom Shop",
-      yearDigit: yearDigit,
-      sequenceNumber: parseInt(ranking) || ranking,
-      decodedInfo: {
-        Format: "Custom Shop (CS prefix)",
-        "Year digit": yearDigit,
-        "Production sequence": ranking,
-      },
-    };
-  }
-
-  return null;
-};
-
-// Helper function to parse Les Paul Classic serials
-const parseLessPaulClassicSerial = (serial) => {
-  // Formats: Y RRRR or YY RRRR
-  const match = serial.match(/^(\d{1,2})\s?(\d{4,5})$/);
-  if (match) {
-    const yearPart = match[1];
-    const ranking = match[2];
-
-    let year;
-    if (yearPart.length === 1) {
-      // Single digit year (1989-1999)
-      year = `199${yearPart}`;
-    } else {
-      // Two digit year (2000+)
-      year = `20${yearPart}`;
-    }
-
-    return {
-      format: "Les Paul Classic",
-      year: year,
-      sequenceNumber: parseInt(ranking),
-      decodedInfo: {
-        Format: "Les Paul Classic ink-stamped",
-        Year: year,
-        "Production sequence": ranking,
-      },
-    };
-  }
-
-  return null;
-};
-
-// Helper function to parse Historic Reissue serials
-const parseHistoricReissueSerial = (serial) => {
-  // Format examples: M YYYY, 9 0234 A
-  const upperSerial = serial.toUpperCase();
-
-  // Check for M YYYY format
-  const mFormat = upperSerial.match(/^([A-Z])\s?(\d{4})$/);
-  if (mFormat) {
-    const modelDigit = mFormat[1];
-    const yearAndRank = mFormat[2];
-
-    // First digit is the model year being reissued (e.g., 9 = 1959)
-    const reissueModel = `195${yearAndRank[0]}`;
-    const productionYear = `199${yearAndRank[1]}`; // Assuming 1990s
-    const ranking = yearAndRank.substring(2);
-
-    return {
-      format: "Historic Reissue",
-      reissueModel: reissueModel,
-      productionYear: productionYear,
-      sequenceNumber: parseInt(ranking),
-      decodedInfo: {
-        Format: "Historic Reissue",
-        "Reissue of": reissueModel + " model",
-        "Made in": productionYear,
-        "Production sequence": ranking,
-      },
-    };
-  }
-
-  // Check for digit-based format (e.g., 9 0234)
-  const digitFormat = serial.match(/^(\d)\s?(\d{4})([A-Z])?$/);
-  if (digitFormat) {
-    const modelYear = digitFormat[1];
-    const yearAndRank = digitFormat[2];
-    const suffix = digitFormat[3] || "";
-
-    const reissueModel = `195${modelYear}`;
-    const productionYear = `20${yearAndRank.substring(0, 2)}`;
-    const ranking = yearAndRank.substring(2);
-
-    return {
-      format: "Historic Reissue",
-      reissueModel: reissueModel,
-      productionYear: productionYear,
-      sequenceNumber: parseInt(ranking),
-      suffix: suffix,
-      decodedInfo: {
-        Format: "Historic Reissue",
-        "Reissue of": reissueModel + " model",
-        "Made in": productionYear,
-        "Production sequence": ranking + suffix,
-      },
-    };
-  }
-
-  return null;
-};
-
-// Helper function to parse 5/6 digit serials
-const parseFiveOrSixDigitSerial = (serial) => {
-  if (/^\d{5,6}$/.test(serial)) {
-    // Try to extract year information
-    let possibleYear = null;
-    let sequenceNumber = serial;
-
-    // Check if it starts with a year indicator
-    if (serial.length === 6) {
-      const firstDigit = serial[0];
-      if (firstDigit >= "0" && firstDigit <= "9") {
-        // Could be 195X or 196X
-        possibleYear = `19${firstDigit}X`;
-        sequenceNumber = serial.substring(1);
-      }
-    }
-
-    return {
-      format: "5/6 digit ink-stamped",
-      possibleYear: possibleYear,
-      sequenceNumber: sequenceNumber,
-      decodedInfo: {
-        Format: "5/6 digit ink-stamped",
-        "Possible era": possibleYear || "1952-1970",
-        Sequence: sequenceNumber,
-      },
-    };
-  }
-
-  return null;
-};
-
-// Helper function to parse 9-digit impressed serials (2005-2014)
-const parseNineDigitImpressed = (serial) => {
-  if (/^\d{9}$/.test(serial) && serial[0] >= "0" && serial[0] <= "9") {
-    // Format: YDDDYBRRR
+  // 8-digit YDDDYRRR format (1977-2005)
+  if (
+    pattern.includes("YDDDYRRR") &&
+    /^\d{8}$/.test(serial) &&
+    serial[0] === serial[4]
+  ) {
     const yearDigit = serial[0];
     const dayOfYear = serial.substring(1, 4);
-    const batchNumber = serial[5];
-    const ranking = serial.substring(6);
+    const factoryRanking = serial.substring(5, 8);
 
-    // Determine year
     let year;
-    if (yearDigit === "5") year = "2005";
-    else if (yearDigit >= "6" && yearDigit <= "9") year = `200${yearDigit}`;
-    else if (yearDigit >= "0" && yearDigit <= "4") year = `201${yearDigit}`;
+    if (yearDigit >= "7" && yearDigit <= "9") {
+      year = `197${yearDigit}`;
+    } else if (yearDigit >= "0" && yearDigit <= "5") {
+      year = `200${yearDigit}`;
+    } else {
+      year = `198${yearDigit}`;
+    }
 
     const exactDate = getDateFromDayOfYear(parseInt(year), parseInt(dayOfYear));
 
     return {
-      format: "9-digit impressed (2005-2014)",
+      type: "8-digit impressed",
       year: year,
-      dayOfYear: parseInt(dayOfYear),
-      batchNumber: parseInt(batchNumber),
-      sequenceNumber: parseInt(ranking),
       exactDate: exactDate,
+      dayOfYear: parseInt(dayOfYear),
+      factoryRanking: parseInt(factoryRanking),
       decodedInfo: {
-        Format: "9-digit impressed (YDDDYBRRR)",
+        Format: "8-digit impressed (YDDDYRRR)",
         Year: year,
         "Production day": `${dayOfYear} (${exactDate.month} ${exactDate.day})`,
-        Batch: batchNumber,
-        "Sequence in batch": ranking,
+        "Daily production sequence": factoryRanking,
+      },
+    };
+  }
+
+  // 9-digit YDDDYBRRR format (2005-2014)
+  if (pattern.includes("YDDDYBRRR") && /^\d{9}$/.test(serial)) {
+    try {
+      // Check both possible formats
+      // Format 1: YDDDYBRRR where Y is at positions 0 and 4
+      if (serial[0] === serial[4]) {
+        const yearDigit = serial[0];
+        const dayOfYear = serial.substring(1, 4);
+        const batchNumber = serial[5];
+        const ranking = serial.substring(6);
+
+        let year;
+        if (yearDigit === "5") year = "2005";
+        else if (yearDigit >= "6" && yearDigit <= "9") year = `200${yearDigit}`;
+        else if (yearDigit >= "0" && yearDigit <= "4") year = `201${yearDigit}`;
+
+        const exactDate = getDateFromDayOfYear(
+          parseInt(year),
+          parseInt(dayOfYear)
+        );
+
+        // Build result with defensive checks
+        const result = {
+          type: "9-digit impressed",
+          year: year || "Unknown",
+          exactDate: exactDate,
+          dayOfYear: parseInt(dayOfYear) || 0,
+          batchNumber: parseInt(batchNumber) || 0,
+          sequenceNumber: parseInt(ranking) || 0,
+          productionNumber: parseInt(ranking) || 0,
+          decodedInfo: {
+            Format: "9-digit impressed (YDDDYBRRR)",
+            Year: year || "Unknown",
+            "Production day": exactDate
+              ? `${dayOfYear} (${exactDate.month} ${exactDate.day})`
+              : `Day ${dayOfYear}`,
+            Batch: batchNumber || "Unknown",
+            "Production Number": ranking || "Unknown",
+          },
+        };
+
+        return result;
+      }
+
+      // Format 2: DDDYYBRRR where DDD is day, YY is year position 4
+      const dayOfYear = parseInt(serial.substring(0, 4));
+      if (dayOfYear >= 1 && dayOfYear <= 366) {
+        const yearDigit = serial[4];
+        const batchNumber = serial[5];
+        const ranking = serial.substring(6);
+
+        let year;
+        if (yearDigit === "5") year = "2005";
+        else if (yearDigit >= "6" && yearDigit <= "9") year = `200${yearDigit}`;
+        else if (yearDigit >= "0" && yearDigit <= "4") year = `201${yearDigit}`;
+
+        const exactDate = getDateFromDayOfYear(parseInt(year), dayOfYear);
+
+        // Determine factory for Nashville plant
+        let factory = "Nashville Plant, TN, USA";
+
+        const result = {
+          type: "9-digit impressed",
+          year: year || "Unknown",
+          exactDate: exactDate,
+          dayOfYear: dayOfYear || 0,
+          batchNumber: parseInt(batchNumber) || 0,
+          sequenceNumber: parseInt(ranking) || 0,
+          productionNumber: parseInt(ranking) || 0,
+          factory: factory,
+          decodedInfo: {
+            Format: "9-digit impressed",
+            Year: year || "Unknown",
+            "Production day": exactDate
+              ? `Day ${dayOfYear} (${exactDate.month} ${exactDate.day})`
+              : `Day ${dayOfYear}`,
+            Factory: factory,
+            Batch: batchNumber || "Unknown",
+            "Production Number": ranking || "Unknown",
+          },
+        };
+        console.log("Decoded 9-digit result:", result);
+        return result;
+      }
+    } catch (error) {
+      console.error("Error parsing 9-digit Gibson serial:", error, {
+        serial,
+        pattern,
+      });
+      // Return a basic result instead of crashing
+      return {
+        type: "9-digit impressed",
+        year: "Unknown",
+        exactDate: null,
+        dayOfYear: 0,
+        batchNumber: 0,
+        sequenceNumber: 0,
+        productionNumber: 0,
+        factory: "Nashville Plant, TN, USA",
+        decodedInfo: {
+          Format: "9-digit impressed (parsing error)",
+          Year: "Unknown",
+          "Production day": "Unable to parse",
+          Factory: "Nashville Plant, TN, USA",
+          Batch: "Unknown",
+          "Production Number": "Unknown",
+        },
+      };
+    }
+  }
+
+  // 10-digit YYMMDDFFFF format (2014-Present)
+  if (pattern.includes("YYMMDDFFFF") && /^\d{10}$/.test(serial)) {
+    const year = `20${serial.substring(0, 2)}`;
+    const month = parseInt(serial.substring(2, 4));
+    const day = parseInt(serial.substring(4, 6));
+    const factoryOrder = serial.substring(6);
+
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    return {
+      type: "10-digit modern",
+      year: year,
+      exactDate: {
+        month: months[month - 1],
+        day: day,
+        year: parseInt(year),
+      },
+      factoryOrder: parseInt(factoryOrder),
+      decodedInfo: {
+        Format: "10-digit (YYMMDDFFFF)",
+        Year: year,
+        "Production date": `${months[month - 1]} ${day}, ${year}`,
+        "Factory order number": factoryOrder,
+      },
+    };
+  }
+
+  // 8-digit decal (1975-1977)
+  if (
+    (pattern.includes("99XXXXXX") ||
+      pattern.includes("00XXXXXX") ||
+      pattern.includes("06XXXXXX")) &&
+    /^\d{8}$/.test(serial)
+  ) {
+    const yearCode = serial.substring(0, 2);
+    let year;
+    if (yearCode === "99") year = "1975";
+    else if (yearCode === "00") year = "1976";
+    else if (yearCode === "06") year = "1977";
+
+    return {
+      type: "8-digit decal",
+      year: year,
+      decodedInfo: {
+        Format: "8-digit decal/sticker",
+        Year: year,
+        "Production sequence": serial.substring(2),
+      },
+    };
+  }
+
+  // Custom Shop format
+  if (pattern.includes("CSYRRRR") && /^CS\d{5}$/i.test(serial)) {
+    return {
+      type: "custom shop",
+      yearDigit: serial[2],
+      sequenceNumber: serial.substring(3),
+      decodedInfo: {
+        Format: "Custom Shop (CS prefix)",
+        "Year digit": serial[2],
+        "Production sequence": serial.substring(3),
+      },
+    };
+  }
+
+  // Les Paul Classic format
+  if (
+    (pattern.includes("Y_XXXX") || pattern.includes("YYXXXX")) &&
+    (/^\d\s\d{4}$/.test(serial) || /^\d{6}$/.test(serial))
+  ) {
+    let year, sequence;
+    if (serial.includes(" ")) {
+      const parts = serial.split(" ");
+      const yearDigit = parts[0];
+      year = yearDigit.length === 1 ? `199${yearDigit}` : `20${yearDigit}`;
+      sequence = parts[1];
+    } else if (serial.length === 6) {
+      year = `20${serial.substring(0, 2)}`;
+      sequence = serial.substring(2);
+    }
+
+    return {
+      type: "les paul classic",
+      year: year,
+      sequenceNumber: sequence,
+      decodedInfo: {
+        Format: "Les Paul Classic",
+        Year: year,
+        "Production sequence": sequence,
       },
     };
   }
@@ -300,612 +611,273 @@ export const decodeGibsonSerial = (
   previousAnswers = [],
   continueFromRuleIndex = -1
 ) => {
-  const upperSerial = serial.toUpperCase();
-  const rules = gibsonRules.gibson;
+  try {
+    console.log("Decoding Gibson serial:", serial);
 
-  // If we have a rule index to continue from, start there
-  let startIndex = continueFromRuleIndex >= 0 ? continueFromRuleIndex : 0;
-
-  // Try to match serial against each rule
-  for (let i = startIndex; i < rules.length; i++) {
-    const rule = rules[i];
-    let isMatch = false;
-
-    // If continuing from a rule, we already matched it
-    if (i === continueFromRuleIndex) {
-      isMatch = true;
-    } else {
-      // Pattern matching logic based on pattern_description
-      if (rule.pattern_description.includes("Pre-1952 Factory Order Numbers")) {
-        // Complex FON patterns - simplified check
-        isMatch =
-          serial.length <= 5 ||
-          (serial.length <= 10 && /[A-Z]/.test(upperSerial));
-      } else if (
-        rule.pattern_description.includes("5 or 6-digit number (inked")
-      ) {
-        isMatch = /^\d{5,6}$/.test(serial);
-      } else if (
-        rule.pattern_description.includes("6-digit number (impressed)")
-      ) {
-        isMatch = /^\d{6}$/.test(serial);
-      } else if (rule.pattern_description.includes("8-digit decal/sticker")) {
-        isMatch =
-          /^\d{8}$/.test(serial) &&
-          (serial.startsWith("99") ||
-            serial.startsWith("00") ||
-            serial.startsWith("06"));
-      } else if (
-        rule.pattern_description.includes("8-digit number (impressed)")
-      ) {
-        isMatch =
-          /^\d{8}$/.test(serial) &&
-          !serial.startsWith("94") &&
-          !serial.startsWith("99") &&
-          !serial.startsWith("00") &&
-          !serial.startsWith("06");
-      } else if (
-        rule.pattern_description.includes("9-digit number (impressed)")
-      ) {
-        // More specific check for 2005-2014 format
-        if (/^\d{9}$/.test(serial)) {
-          const firstDigit = serial[0];
-          const hasBatch = serial[5] >= "0" && serial[5] <= "9";
-          isMatch =
-            hasBatch &&
-            ((firstDigit >= "5" && firstDigit <= "9") || // 2005-2009
-              (firstDigit >= "0" && firstDigit <= "4")); // 2010-2014
-        }
-      } else if (
-        rule.pattern_description.includes(
-          "9-digit number (starts with model year)"
-        )
-      ) {
-        isMatch =
-          /^\d{9}$/.test(serial) &&
-          parseInt(serial.substring(0, 2)) >= 14 &&
-          parseInt(serial.substring(0, 2)) <= 19;
-      } else if (
-        rule.pattern_description.includes("8-digit number (starts with '94')")
-      ) {
-        isMatch = serial.startsWith("94") && /^\d{8}$/.test(serial);
-      } else if (rule.pattern_description.includes("Ink-Stamped number")) {
-        isMatch =
-          /^[A-Z]?\s?\d{4,5}$/.test(upperSerial) ||
-          /^\d{1,2}\s\d{4,5}$/.test(serial);
-      } else if (rule.pattern_description.includes("Starts with 'CS'")) {
-        isMatch = upperSerial.startsWith("CS");
-      } else if (rule.pattern_description.includes("Custom Shop Reissue")) {
-        isMatch =
-          /^[A-Z]\s?\d{4}/.test(upperSerial) ||
-          /^\d{1,2}\s?\d{4}[A-Z]?$/.test(serial);
-      }
+    // Validate inputs
+    if (!serial || typeof serial !== "string") {
+      throw new Error("Invalid serial number provided");
     }
 
-    if (isMatch) {
-      // Check if we need clarification
-      if (rule.clarifying_questions && rule.clarifying_questions.length > 0) {
-        // Find which question to ask based on previous answers
-        const questionIndex = previousAnswers.length;
-        if (questionIndex < rule.clarifying_questions.length) {
-          const question = rule.clarifying_questions[questionIndex];
+    const upperSerial = serial.toUpperCase();
+    const rules = gibsonRules.gibson;
 
-          // Generate appropriate options based on the question
-          let options = ["Yes", "No"]; // Default
+    if (!rules || !Array.isArray(rules)) {
+      throw new Error("Gibson rules data is invalid");
+    }
 
-          if (question.question.includes("1950s or 1960s")) {
-            options = ["1950s features", "1960s features", "Not sure"];
-          } else if (question.question.includes("MADE IN USA")) {
-            options = [
-              "Yes, it has 'MADE IN USA' and/or a volute",
-              "No, it doesn't have these features",
-              "Not sure",
-            ];
-          } else if (question.question.includes("impressed into the back")) {
-            options = [
-              "Yes, impressed with 'MADE IN USA'",
-              "No, it's ink-stamped",
-              "Not sure",
-            ];
-          } else if (question.question.includes("acoustic or an electric")) {
-            options = ["Acoustic", "Electric"];
-          } else if (
-            question.question.includes("first digit alone") ||
-            question.question.includes("first two digits")
-          ) {
-            options = [
-              "First digit only (e.g., '8' for 2008)",
-              "First two digits (e.g., '19' for 2019)",
-            ];
-          } else if (question.question.includes("Centennial")) {
-            options = [
-              "Yes, it has Centennial/100th Anniversary markings",
-              "No special markings",
-            ];
-          } else if (
-            question.question.includes("Classic") ||
-            question.question.includes("Reissue")
-          ) {
-            options = [
-              "Les Paul Classic",
-              "Historic Reissue (e.g., '60 Les Paul')",
-              "Other model",
-            ];
-          } else if (question.question.includes("199[Y], 200[Y], or 201[Y]")) {
-            options = [
-              "1990s (199X)",
-              "2000s (200X)",
-              "2010s (201X)",
-              "2020s (202X)",
-            ];
-          }
+    // If we have a rule index to continue from, start there
+    let startIndex = continueFromRuleIndex >= 0 ? continueFromRuleIndex : 0;
 
-          return {
-            needsClarification: true,
-            question: replacePlaceholder(question.question, serial),
-            options: options,
-            reason: question.purpose,
-            ruleIndex: i,
-            previousAnswers: previousAnswers,
-          };
+    // Try to match serial against each rule
+    for (let i = startIndex; i < rules.length; i++) {
+      const rule = rules[i];
+
+      if (!rule || typeof rule !== "object") {
+        continue;
+      }
+
+      let isMatch = false;
+
+      // If continuing from a rule, we already matched it
+      if (i === continueFromRuleIndex) {
+        isMatch = true;
+      } else {
+        // Skip header/category entries
+        if (
+          !rule.pattern_description ||
+          rule.pattern_description.includes("nan") ||
+          rule.years === "nan" ||
+          (rule.pattern_description.includes("–") &&
+            !rule.pattern_description.split("–")[1]?.trim())
+        ) {
+          continue;
+        }
+
+        // Use the new pattern matching system
+        try {
+          isMatch = matchesPattern(serial, rule.pattern_description);
+        } catch (patternError) {
+          console.warn("Error matching pattern:", patternError);
+          continue;
         }
       }
 
-      // We have an answer or need to generate one
-      let answer = rule.answer ? replacePlaceholder(rule.answer, serial) : null;
-      let years = [rule.years];
+      if (isMatch) {
+        // Check if we need clarification
+        if (
+          rule.clarifying_questions &&
+          Array.isArray(rule.clarifying_questions) &&
+          rule.clarifying_questions.length > 0 &&
+          rule.clarifying_questions[0] !== "nan"
+        ) {
+          // Find which question to ask based on previous answers
+          const questionIndex = Array.isArray(previousAnswers)
+            ? previousAnswers.length
+            : 0;
+          if (questionIndex < rule.clarifying_questions.length) {
+            const question = rule.clarifying_questions[questionIndex];
 
-      // Special handling for specific patterns with full decoding
-      if (rule.pattern_description.includes("8-digit decal/sticker")) {
-        const yearCode = serial.substring(0, 2);
-        const remainingDigits = serial.substring(2);
+            // Skip "nan" questions
+            if (!question || question === "nan") {
+              // Move to next rule or return result
+              continue;
+            }
 
-        if (yearCode === "99") years = ["1975"];
-        else if (yearCode === "00") years = ["1976"];
-        else if (yearCode === "06") years = ["1977"];
+            // Generate appropriate options based on the question
+            let options = ["Yes", "No", "Not sure"]; // Default
 
-        const decodedValues = {
-          Year: years[0],
-          "Production day": remainingDigits.substring(0, 3),
-          "Instrument ranking": remainingDigits.substring(3),
-        };
-
-        return {
-          years: years,
-          country: "USA",
-          confidence: "High",
-          decodedValues: decodedValues,
-          rule: `This Gibson was made in ${years[0]}. The 8-digit decal/sticker format was used from 1975-1977, with the first two digits indicating the year (99=1975, 00=1976, 06=1977).`,
-          notes: rule.notes,
-          sourceNotes: rule.source_notes,
-          sources: [
-            {
-              name: "Gibson Serial Number Guide",
-              url: "https://www.gibson.com/Support/Serial-Number-Search",
-              description: "8-digit decal/sticker format used 1975-1977",
-            },
-          ],
-        };
-      } else if (
-        rule.pattern_description.includes("8-digit number (impressed)")
-      ) {
-        // YDDDYRRR format
-        const yearDigit = serial[0];
-        const dayOfYear = serial.substring(1, 4);
-        const yearDigit2 = serial[4]; // Should match first year digit
-        const factoryRanking = serial.substring(5, 8);
-
-        // Determine year based on digit and context
-        let year;
-        if (yearDigit >= "7") {
-          year = `197${yearDigit}`;
-        } else if (yearDigit <= "5") {
-          year = `200${yearDigit}`;
-        } else {
-          year = `198${yearDigit}`;
-        }
-        years = [year];
-
-        // Determine factory based on answers and ranking
-        let factory = "Not specified";
-        let factoryDetails = "";
-
-        if (previousAnswers.includes("Electric")) {
-          const ranking = parseInt(factoryRanking);
-          if (ranking >= 300 && ranking <= 999) {
-            factory = "Nashville/Memphis";
-            factoryDetails =
-              "Electric guitars with rankings 300-999 were made in Nashville or Memphis";
-          } else if (ranking >= 1 && ranking <= 299) {
-            factory = "Kalamazoo";
-            factoryDetails =
-              "Electric guitars with rankings 1-299 were made in Kalamazoo";
-          }
-        } else if (previousAnswers.includes("Acoustic")) {
-          const ranking = parseInt(factoryRanking);
-          if (ranking >= 1 && ranking <= 299) {
-            factory = "Bozeman, MT";
-            factoryDetails =
-              "Acoustic guitars with rankings 1-299 were made in Bozeman, Montana";
-          } else if (ranking >= 300 && ranking <= 999) {
-            factory = "Nashville";
-            factoryDetails =
-              "Acoustic guitars with rankings 300-999 were made in Nashville";
-          }
-        }
-
-        // Calculate exact date
-        const exactDate = getDateFromDayOfYear(
-          parseInt(year),
-          parseInt(dayOfYear)
-        );
-
-        const decodedValues = {
-          Year: year,
-          "Production day": `${dayOfYear} (${exactDate.month} ${exactDate.day})`,
-          Factory: factory,
-          "Daily production sequence": factoryRanking,
-        };
-
-        // Return enhanced structure
-        return {
-          years: years,
-          exactDate: exactDate,
-          country: "USA",
-          factory: factory,
-          factoryDetails: factoryDetails,
-          productionNumber: parseInt(factoryRanking),
-          productionContext: `#${parseInt(
-            factoryRanking
-          )} made on day ${parseInt(dayOfYear)} of ${year}`,
-          confidence: "High",
-          decodedValues: decodedValues,
-          rule: `This Gibson was made on ${exactDate.month} ${
-            exactDate.day
-          }, ${year}. It was guitar #${parseInt(factoryRanking)} made that day${
-            factory !== "Not specified" ? ` at the ${factory} factory` : ""
-          }. The format YDDDYRRR was used from 1977-2005.`,
-          notes: rule.notes,
-          sourceNotes: rule.source_notes,
-          sources: [
-            {
-              name: "Gibson Serial Number Guide",
-              url: "https://www.gibson.com/Support/Serial-Number-Search",
-              description:
-                "8-digit impressed format YDDDYRRR where Y=year digit, DDD=day of year, RRR=ranking/production number",
-            },
-          ],
-        };
-      } else if (
-        rule.pattern_description.includes(
-          "9-digit number (starts with model year)"
-        )
-      ) {
-        // YYRRRRRRR format (2014-2019)
-        const modelYear = serial.substring(0, 2);
-        const ranking = serial.substring(2);
-        const fullYear = `20${modelYear}`;
-        years = [fullYear];
-
-        const decodedValues = {
-          "Model year": fullYear,
-          "Production sequence": ranking,
-        };
-
-        return {
-          years: years,
-          exactDate: null, // Production sequence doesn't give exact date
-          country: "USA",
-          factory: "Not specified",
-          productionNumber: parseInt(ranking),
-          productionContext: `Production sequence #${parseInt(
-            ranking
-          )} in ${fullYear}`,
-          confidence: "High",
-          decodedValues: decodedValues,
-          rule: `This Gibson was made in ${fullYear}, production sequence #${parseInt(
-            ranking
-          )}. The format YYRRRRRRR was used from 2014 to mid-2019, where the first two digits are the model year.`,
-          notes: rule.notes,
-          sourceNotes: rule.source_notes,
-          sources: [
-            {
-              name: "Gibson Serial Number Guide",
-              url: "https://www.gibson.com/Support/Serial-Number-Search",
-              description:
-                "9-digit format YYRRRRRRR where YY=model year, RRRRRRR=ranking/production sequence",
-            },
-          ],
-        };
-      } else if (
-        rule.pattern_description.includes("9-digit number (impressed)")
-      ) {
-        // Try to parse as 2005-2014 format
-        const parsed = parseNineDigitImpressed(serial);
-        if (parsed) {
-          return {
-            years: [parsed.year],
-            exactDate: parsed.exactDate,
-            country: "USA",
-            factory: "Not specified",
-            productionNumber: parsed.sequenceNumber,
-            batchNumber: parsed.batchNumber,
-            productionContext: `Batch ${parsed.batchNumber}, sequence #${parsed.sequenceNumber} on day ${parsed.dayOfYear}`,
-            confidence: "High",
-            decodedValues: parsed.decodedInfo,
-            rule: `This Gibson was made on ${parsed.exactDate.month} ${parsed.exactDate.day}, ${parsed.year}. It was part of batch ${parsed.batchNumber}, sequence #${parsed.sequenceNumber}. The format YDDDYBRRR was used from 2005-2014.`,
-            notes: rule.notes,
-            sourceNotes: rule.source_notes,
-            sources: [
-              {
-                name: "Gibson Serial Number Guide",
-                url: "https://www.gibson.com/Support/Serial-Number-Search",
-                description:
-                  "9-digit format YDDDYBRRR where Y=year, DDD=day, B=batch, RRR=sequence",
-              },
-            ],
-          };
-        }
-      } else if (rule.pattern_description.includes("Starts with 'CS'")) {
-        // Custom Shop format
-        const parsed = parseCustomShopSerial(serial);
-        if (parsed) {
-          // Need clarification on decade
-          if (!answer) {
-            // Still need to ask about decade
-            // Let the clarification question flow continue
-          } else {
-            // We have the decade answer
-            let decade = "20"; // Default to 2000s
-            if (previousAnswers.some((a) => a.includes("199"))) decade = "199";
-            else if (previousAnswers.some((a) => a.includes("201")))
-              decade = "201";
-            else if (previousAnswers.some((a) => a.includes("202")))
-              decade = "202";
-
-            const fullYear = decade + parsed.yearDigit;
+            if (
+              question.includes("inside the body") ||
+              question.includes("f-hole")
+            ) {
+              options = [
+                "Yes, on a white label",
+                "Yes, stamped on wood",
+                "No, it's elsewhere",
+              ];
+            } else if (question.includes("MADE IN USA")) {
+              options = [
+                "Yes, it has 'MADE IN USA'",
+                "No, no such stamp",
+                "Not sure",
+              ];
+            } else if (question.includes("volute")) {
+              options = ["Yes, has a volute", "No volute", "Not sure"];
+            } else if (
+              question.includes("decal") ||
+              question.includes("sticker")
+            ) {
+              options = [
+                "Yes, it's a decal/sticker",
+                "No, it's impressed into wood",
+                "Not sure",
+              ];
+            } else if (
+              question.includes("Classic") ||
+              question.includes("logo")
+            ) {
+              options = [
+                "Yes, it says 'Classic'",
+                "No 'Classic' marking",
+                "Not sure",
+              ];
+            }
 
             return {
-              years: [fullYear],
-              country: "USA",
-              factory: "Custom Shop",
-              productionNumber: parsed.sequenceNumber,
-              confidence: "High",
-              decodedValues: {
-                Year: fullYear,
-                Factory: "Gibson Custom Shop",
-                "Production sequence": parsed.sequenceNumber,
-              },
-              rule: `This Gibson Custom Shop instrument was made in ${fullYear}, production sequence #${parsed.sequenceNumber}. The CS prefix indicates Custom Shop production.`,
-              notes: rule.notes,
-              sourceNotes: rule.source_notes,
-              sources: [
-                {
-                  name: "Gibson Custom Shop Serial Guide",
-                  url: "https://www.gibson.com/Support/Serial-Number-Search",
-                  description:
-                    "Format CSYRRRR where CS=Custom Shop, Y=year digit, RRRR=sequence",
-                },
-              ],
+              needsClarification: true,
+              question: replacePlaceholder(question, serial),
+              options: options,
+              reason:
+                rule.notes ||
+                "This helps us determine the exact year and model",
+              ruleIndex: i,
+              previousAnswers: previousAnswers || [],
             };
           }
         }
-      } else if (rule.pattern_description.includes("Ink-Stamped number")) {
-        // Les Paul Classic format
-        const parsed = parseLessPaulClassicSerial(serial);
-        if (parsed) {
-          return {
-            years: [parsed.year],
-            country: "USA",
-            model: "Les Paul Classic",
-            productionNumber: parsed.sequenceNumber,
-            confidence: "High",
-            decodedValues: parsed.decodedInfo,
-            rule: `This Les Paul Classic was made in ${parsed.year}, production sequence #${parsed.sequenceNumber}. The ink-stamped format was primarily used on Les Paul Classics from 1989-2006.`,
-            notes: rule.notes,
-            sourceNotes: rule.source_notes,
-            sources: [
-              {
-                name: "Gibson Les Paul Classic Serial Guide",
-                url: "https://www.gibson.com/Support/Serial-Number-Search",
-                description:
-                  "Ink-stamped format Y RRRR or YY RRRR for Les Paul Classics",
-              },
-            ],
-          };
-        }
-      } else if (rule.pattern_description.includes("Custom Shop Reissue")) {
-        // Historic Reissue format
-        const parsed = parseHistoricReissueSerial(serial);
-        if (parsed) {
-          return {
-            years: [parsed.productionYear],
-            country: "USA",
-            factory: "Custom Shop",
-            model: `Historic Reissue of ${parsed.reissueModel}`,
-            productionNumber: parsed.sequenceNumber,
-            confidence: "High",
-            decodedValues: parsed.decodedInfo,
-            rule: `This Gibson Custom Shop Historic Reissue recreates a ${parsed.reissueModel} model and was made in ${parsed.productionYear}, production sequence #${parsed.sequenceNumber}.`,
-            notes: rule.notes,
-            sourceNotes: rule.source_notes,
-            sources: [
-              {
-                name: "Gibson Historic Reissue Serial Guide",
-                url: "https://www.gibson.com/Support/Serial-Number-Search",
-                description:
-                  "Historic Reissue format encodes both the original model year and production year",
-              },
-            ],
-          };
-        }
-      } else if (
-        rule.pattern_description.includes("5 or 6-digit number (inked") ||
-        rule.pattern_description.includes("6-digit number (impressed)")
-      ) {
-        // Need more specific parsing for 5/6 digit serials
-        const parsed = parseFiveOrSixDigitSerial(serial);
-        if (parsed && !answer) {
-          // Still need clarification
-          // Let the question flow continue
-        } else if (answer) {
-          // After clarification, provide detailed response
-          const decodedValues = parsed
-            ? parsed.decodedInfo
-            : {
-                Format: rule.pattern_description,
-                Era: rule.years,
-                Serial: serial,
-              };
 
-          return {
-            years: Array.isArray(years) ? years : [years],
-            country: "USA",
-            confidence: previousAnswers.length > 0 ? "Medium" : "Low",
-            decodedValues: decodedValues,
-            rule:
-              answer ||
-              `This Gibson with serial number ${serial} dates to ${rule.years}. ${rule.notes}`,
-            notes: rule.notes,
-            sourceNotes: rule.source_notes,
-            sources: [
-              {
-                name: "Gibson Vintage Serial Guide",
-                url: "https://www.gibson.com/Support/Serial-Number-Search",
-                description: rule.pattern_description,
-              },
-            ],
-          };
-        }
-      } else if (
-        rule.pattern_description.includes("8-digit number (starts with '94')")
-      ) {
-        // Centennial or 1994 production
-        const remainingDigits = serial.substring(2);
-
-        let modelType = "Standard 1994 production";
-        if (previousAnswers.some((a) => a.includes("Centennial"))) {
-          modelType = "Centennial edition (100th Anniversary)";
+        // Parse the serial for detailed information
+        let parsedInfo = null;
+        try {
+          parsedInfo = parseGibsonSerialFormat(serial, rule);
+        } catch (parseError) {
+          console.error("Error parsing Gibson serial format:", parseError);
         }
 
-        const decodedValues = {
-          Year: "1994",
-          Type: modelType,
-          Sequence: remainingDigits,
-        };
+        // Build the response with defensive checks
+        let years =
+          rule.years && rule.years !== "Unknown" ? [rule.years] : ["Unknown"];
+        let confidence = "Medium";
+        let decodedValues = {};
+        let exactDate = null;
+        let factory = null;
+        let productionNumber = null;
 
-        return {
-          years: ["1994"],
-          country: "USA",
-          modelNotes: modelType,
-          confidence: "High",
-          decodedValues: decodedValues,
-          rule: `This Gibson was made in 1994${
-            modelType.includes("Centennial")
-              ? " as part of Gibson's 100th Anniversary Centennial series"
-              : ""
-          }. Serial number sequence: ${remainingDigits}.`,
-          notes: rule.notes,
-          sourceNotes: rule.source_notes,
-          sources: [
-            {
-              name: "Gibson 1994/Centennial Serial Guide",
-              url: "https://www.gibson.com/Support/Serial-Number-Search",
-              description:
-                "8-digit serials starting with '94' indicate 1994 production or Centennial models",
-            },
-          ],
-        };
-      }
-
-      // For other patterns that don't have special handling yet
-      if (answer) {
-        answer = extractYearFromAnswer(answer, serial);
-
-        // Try to extract specific year from answer
-        if (answer.includes("20") || answer.includes("19")) {
-          const yearMatch = answer.match(/(?:19|20)\d{2}/);
-          if (yearMatch) {
-            years = [yearMatch[0]];
+        if (parsedInfo && typeof parsedInfo === "object") {
+          if (parsedInfo.year) {
+            years = [parsedInfo.year];
+            confidence = "High";
           }
+          if (parsedInfo.exactDate) {
+            exactDate = parsedInfo.exactDate;
+          }
+          if (parsedInfo.factory) {
+            factory = parsedInfo.factory;
+          }
+          if (parsedInfo.productionNumber) {
+            productionNumber = parsedInfo.productionNumber;
+          }
+          if (
+            parsedInfo.decodedInfo &&
+            typeof parsedInfo.decodedInfo === "object"
+          ) {
+            decodedValues = parsedInfo.decodedInfo;
+          }
+        } else {
+          // Basic decoding based on pattern
+          decodedValues = {
+            "Serial format": rule.pattern_description
+              ? rule.pattern_description.split("–")[0]?.trim() || "Unknown"
+              : "Unknown",
+            "Year range": rule.years || "Unknown",
+            "Serial number": serial,
+          };
         }
+
+        // Check if notes indicate ambiguity
+        if (
+          rule.notes &&
+          typeof rule.notes === "string" &&
+          rule.notes.includes("AMBIGUITY")
+        ) {
+          confidence = "Low";
+        }
+
+        const result = {
+          years: years || ["Unknown"],
+          exactDate: exactDate,
+          country: "USA",
+          factory: factory,
+          productionNumber: productionNumber,
+          confidence: confidence || "Medium",
+          decodedValues: decodedValues || {},
+          rule:
+            rule.answer && typeof rule.answer === "string"
+              ? replacePlaceholder(rule.answer, serial)
+              : `This serial number pattern (${
+                  rule.pattern_description?.split("–")[0]?.trim() || "Unknown"
+                }) indicates production years: ${rule.years || "Unknown"}`,
+          notes: rule.notes && rule.notes !== "nan" ? rule.notes : null,
+          ambiguityNotes:
+            rule.notes && rule.notes.includes("AMBIGUITY")
+              ? rule.notes.split("AMBIGUITY.")[1]?.trim()
+              : null,
+          sourceNotes:
+            rule.source_notes && rule.source_notes !== "nan"
+              ? rule.source_notes
+              : null,
+          sources:
+            rule.source_notes && rule.source_notes !== "nan"
+              ? [
+                  {
+                    name: "Gibson Serial Reference",
+                    url: rule.source_notes.includes("http")
+                      ? rule.source_notes
+                      : "https://www.gibson.com/Support/Serial-Number-Search",
+                    description:
+                      rule.pattern_description || "Gibson serial pattern",
+                  },
+                ]
+              : [],
+        };
+
+        console.log("Successfully decoded Gibson serial:", result);
+        return result;
       }
-
-      // Default enhanced return structure for patterns without specific parsing
-      let modelNotes = null;
-      if (
-        rule.notes.includes("Centennial") ||
-        rule.notes.includes("100th Anniversary")
-      ) {
-        modelNotes = "Centennial edition (100th Anniversary)";
-      } else if (rule.notes.includes("Les Paul Classic")) {
-        modelNotes = "Les Paul Classic model";
-      } else if (rule.notes.includes("Historic")) {
-        modelNotes = "Historic Reissue model";
-      }
-
-      // Determine sources based on pattern
-      let sources = [
-        {
-          name: "Gibson Serial Number Guide",
-          url: "https://www.gibson.com/Support/Serial-Number-Search",
-          description: rule.pattern_description,
-        },
-      ];
-
-      if (rule.source_notes) {
-        sources.push({
-          name: "Additional Research",
-          url: "https://www.gibson.com/support",
-          description: rule.source_notes,
-        });
-      }
-
-      const decodedValues = {
-        Format: rule.pattern_description,
-        Era: rule.years,
-        Serial: serial,
-      };
-
-      return {
-        years: Array.isArray(years) ? years : [years],
-        exactDate: null,
-        country: "USA",
-        factory: "Not specified",
-        productionNumber: null,
-        modelNotes: modelNotes,
-        confidence:
-          rule.notes.includes("ambiguity") || rule.notes.includes("uncertain")
-            ? "Medium"
-            : "High",
-        decodedValues: decodedValues,
-        rule:
-          answer ||
-          `This Gibson with serial number ${serial} dates to ${rule.years}. ${rule.notes}`,
-        notes: rule.notes,
-        sourceNotes: rule.source_notes,
-        sources: sources,
-      };
     }
-  }
 
-  // No matching rule found
-  return {
-    years: ["Unknown"],
-    country: "Unknown",
-    confidence: "Low",
-    error: true,
-    rule: "Sorry, we couldn't confidently decode your serial number. Please double-check the number or select a different era/model.",
-    notes:
-      "Gibson serial number systems are complex and have changed many times. This serial format is not recognized in our database. Consider checking with Gibson directly or a vintage guitar expert for assistance.",
-    sources: [
-      {
-        name: "Gibson Support",
-        url: "https://www.gibson.com/Support/Contact-Us",
-        description: "Contact Gibson directly for serial number verification",
-      },
-    ],
-  };
+    // No matching rule found
+    return {
+      years: ["Unknown"],
+      country: "Unknown",
+      confidence: "Low",
+      error: true,
+      rule: "Sorry, we couldn't decode your serial number. The format doesn't match any known Gibson serial number patterns in our database.",
+      notes:
+        "Gibson has used many different serial number formats over the years. Please double-check your serial number or contact Gibson directly for assistance.",
+      sources: [
+        {
+          name: "Gibson Support",
+          url: "https://www.gibson.com/Support/Contact-Us",
+          description: "Contact Gibson directly for serial number verification",
+        },
+      ],
+    };
+  } catch (error) {
+    console.error("Critical error in decodeGibsonSerial:", error, {
+      serial,
+      previousAnswers,
+      continueFromRuleIndex,
+    });
+
+    // Return a safe fallback result
+    return {
+      years: ["Unknown"],
+      country: "USA",
+      confidence: "Low",
+      error: true,
+      rule: "Sorry, we encountered an error while processing your serial number. Please try again or contact Gibson directly.",
+      notes: "An unexpected error occurred during serial number processing.",
+      sources: [
+        {
+          name: "Gibson Support",
+          url: "https://www.gibson.com/Support/Contact-Us",
+          description: "Contact Gibson directly for serial number verification",
+        },
+      ],
+    };
+  }
 };
 
 export const decodeMartinSerial = (serial) => {

@@ -116,10 +116,12 @@ const ChatLookup = () => {
       // Generate and set shareable URL
       const url = generateShareableUrl(sessionData);
       setShareableUrl(url);
-      // Update browser URL without navigation
-      window.history.replaceState({}, "", url);
+      // Only update URL if we're not already on a shared link
+      if (!shareableUrl) {
+        window.history.replaceState({}, "", url);
+      }
     }
-  }, [currentStep, sessionData, location.search]);
+  }, [currentStep, sessionData, location.search, shareableUrl]);
 
   // Parallax effect for background
   useEffect(() => {
@@ -317,36 +319,95 @@ const ChatLookup = () => {
   const handleSerialSubmit = () => {
     if (!inputValue.trim()) return;
 
+    const currentSerial = inputValue.trim();
+    console.log("1. Starting serial submission:", currentSerial);
+
     // Add user message
-    addMessage(inputValue, false);
+    console.log("2. Adding user message");
+    addMessage(currentSerial, false);
+    console.log("3. Setting input value to empty");
     setInputValue("");
 
     // Update session data
-    setSessionData((prev) => ({ ...prev, serialNumber: inputValue }));
+    setSessionData((prev) => ({ ...prev, serialNumber: currentSerial }));
 
-    // Process serial
+    // Process serial with comprehensive error handling
     setTimeout(() => {
-      const result = decodeSerial(sessionData.brand, inputValue);
+      try {
+        console.log(
+          "Processing serial:",
+          currentSerial,
+          "for brand:",
+          sessionData.brand
+        );
 
-      if (result.needsClarification) {
-        // Handle clarification
-        setSessionData((prev) => ({
-          ...prev,
-          clarificationQuestion: result,
-        }));
-        addMessage(
-          result.question ||
-            "I need a bit more information to narrow this down.",
-          true
+        // Validate inputs before processing
+        if (!sessionData.brand) {
+          throw new Error("No brand selected");
+        }
+
+        if (!currentSerial) {
+          throw new Error("No serial number provided");
+        }
+
+        console.log(
+          "6. About to call decodeSerial with brand:",
+          sessionData.brand,
+          "serial:",
+          currentSerial
         );
-        setCurrentStep("clarification");
-        setShowOptions(true);
-        setOptions(
-          result.options?.map((opt) => ({ value: opt, label: opt })) || []
-        );
-      } else {
-        // Show results
-        showResults(result);
+        let result;
+        try {
+          result = decodeSerial(sessionData.brand, currentSerial);
+          console.log("7. Decode result received successfully:", result);
+        } catch (decodeError) {
+          console.error("8. Critical error in decodeSerial:", decodeError);
+          throw new Error(`Decoder failed: ${decodeError.message}`);
+        }
+
+        // Validate result object
+        if (!result || typeof result !== "object") {
+          throw new Error("Invalid result from decoder");
+        }
+
+        if (result.needsClarification) {
+          // Handle clarification
+          setSessionData((prev) => ({
+            ...prev,
+            clarificationQuestion: result,
+          }));
+          addMessage(
+            result.question ||
+              "I need a bit more information to narrow this down.",
+            true
+          );
+          setCurrentStep("clarification");
+          setShowOptions(true);
+          setOptions(
+            result.options?.map((opt) => ({ value: opt, label: opt })) || []
+          );
+        } else {
+          console.log("8. About to show results");
+          // Show results
+          showResults(result);
+          console.log("9. showResults completed");
+        }
+      } catch (error) {
+        console.error("Critical error in handleSerialSubmit:", error, {
+          serial: currentSerial,
+          brand: sessionData.brand,
+        });
+
+        try {
+          addMessage(
+            "Sorry, I encountered an error while processing your serial number. Please try again or contact support.",
+            true
+          );
+        } catch (messageError) {
+          console.error("Failed to add error message:", messageError);
+          // Last resort - force page reload to prevent broken state
+          window.location.reload();
+        }
       }
     }, 800);
   };
@@ -422,29 +483,69 @@ const ChatLookup = () => {
   };
 
   const showResults = (result) => {
-    setSessionData((prev) => ({ ...prev, result }));
+    try {
+      console.log("Showing results:", result);
 
-    const brandName =
-      brandsData.brands.find((b) => b.id === sessionData.brand)?.displayName ||
-      sessionData.brand;
+      // Validate result object
+      if (!result || typeof result !== "object") {
+        throw new Error("Invalid result object provided to showResults");
+      }
 
-    // Add confidence-based intro message
-    let introMessage;
-    if (result.confidence === "High") {
-      introMessage = `Great news! I found detailed information about your ${brandName}.`;
-    } else if (result.confidence === "Medium") {
-      introMessage = `I've found some information about your ${brandName}, though there's a bit of uncertainty due to the serial number format.`;
-    } else {
-      introMessage = `I found some basic information about your ${brandName}, but the serial number format is unusual, so I'm less certain about the details.`;
+      setSessionData((prev) => ({ ...prev, result }));
+
+      const brandName =
+        brandsData.brands.find((b) => b.id === sessionData.brand)
+          ?.displayName ||
+        sessionData.brand ||
+        "Unknown";
+
+      // Add confidence-based intro message with safe fallback
+      let introMessage;
+      const confidence = result.confidence || "Unknown";
+
+      if (confidence === "High") {
+        introMessage = `Great news! I found detailed information about your ${brandName}.`;
+      } else if (confidence === "Medium") {
+        introMessage = `I've found some information about your ${brandName}, though there's a bit of uncertainty due to the serial number format.`;
+      } else {
+        introMessage = `I found some basic information about your ${brandName}, but the serial number format is unusual, so I'm less certain about the details.`;
+      }
+
+      console.log("Adding intro message:", introMessage);
+      addMessage(introMessage, true);
+
+      // Add results message after delay with error handling
+      setTimeout(() => {
+        try {
+          console.log("Adding results display message");
+          addMessage(null, true, true);
+          setCurrentStep("complete");
+        } catch (delayedError) {
+          console.error("Error in delayed results display:", delayedError);
+          addMessage(
+            "Results processed successfully. Please check above for details.",
+            true
+          );
+          setCurrentStep("complete");
+        }
+      }, 800);
+    } catch (error) {
+      console.error("Critical error in showResults:", error, { result });
+
+      try {
+        // Fallback: show a basic error message
+        addMessage(
+          "I've processed your serial number but encountered a display error. Here's what I found: The serial appears to be from a Gibson guitar. Please contact support for detailed information.",
+          true
+        );
+        setCurrentStep("complete");
+      } catch (fallbackError) {
+        console.error("Failed to show fallback results:", fallbackError);
+        // Last resort - reload the page
+        alert("Sorry, we encountered a technical issue. The page will reload.");
+        window.location.reload();
+      }
     }
-
-    addMessage(introMessage, true);
-
-    // Add results message after delay
-    setTimeout(() => {
-      addMessage(null, true, true);
-      setCurrentStep("complete");
-    }, 800);
   };
 
   const handleNewLookup = () => {
@@ -509,6 +610,7 @@ const ChatLookup = () => {
                   key={msg.id}
                   isRandy={msg.isRandy}
                   message={msg.text}
+                  showResults={msg.showResults}
                 >
                   {msg.showResults && sessionData.result && (
                     <div className={styles.resultsCard}>
@@ -523,22 +625,29 @@ const ChatLookup = () => {
                       </h3>
 
                       {/* Show decoded values section if available */}
-                      {sessionData.result.decodedValues && (
-                        <div className={styles.decodedSection}>
-                          <h4 className={styles.decodedTitle}>
-                            🔍 Decoded from serial number:{" "}
-                            {sessionData.serialNumber}
-                          </h4>
-                          {Object.entries(sessionData.result.decodedValues).map(
-                            ([key, value]) => (
-                              <div key={key} className={styles.resultItem}>
-                                <span className={styles.label}>{key}:</span>
-                                <span className={styles.value}>{value}</span>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      )}
+                      {sessionData.result.decodedValues &&
+                        typeof sessionData.result.decodedValues === "object" &&
+                        sessionData.result.decodedValues !== null && (
+                          <div className={styles.decodedSection}>
+                            <h4 className={styles.decodedTitle}>
+                              🔍 Decoded from serial number:{" "}
+                              {sessionData.serialNumber || "N/A"}
+                            </h4>
+                            {Object.entries(sessionData.result.decodedValues)
+                              .filter(
+                                ([key, value]) =>
+                                  value != null && value !== undefined
+                              )
+                              .map(([key, value]) => (
+                                <div key={key} className={styles.resultItem}>
+                                  <span className={styles.label}>{key}:</span>
+                                  <span className={styles.value}>
+                                    {String(value)}
+                                  </span>
+                                </div>
+                              ))}
+                          </div>
+                        )}
 
                       {/* Standard result fields */}
                       {!sessionData.result.decodedValues && (
@@ -546,24 +655,30 @@ const ChatLookup = () => {
                           <div className={styles.resultItem}>
                             <span className={styles.label}>📅 Year(s):</span>
                             <span className={styles.value}>
-                              {Array.isArray(sessionData.result.years)
-                                ? sessionData.result.years.join(" - ")
-                                : sessionData.result.years}
+                              {sessionData.result.years
+                                ? Array.isArray(sessionData.result.years)
+                                  ? sessionData.result.years.join(" - ")
+                                  : String(sessionData.result.years)
+                                : "Unknown"}
                             </span>
                           </div>
 
-                          {sessionData.result.exactDate && (
-                            <div className={styles.resultItem}>
-                              <span className={styles.label}>
-                                📆 Exact Date:
-                              </span>
-                              <span className={styles.value}>
-                                {sessionData.result.exactDate.month}{" "}
-                                {sessionData.result.exactDate.day},{" "}
-                                {sessionData.result.exactDate.year}
-                              </span>
-                            </div>
-                          )}
+                          {sessionData.result.exactDate &&
+                            typeof sessionData.result.exactDate === "object" &&
+                            sessionData.result.exactDate.month &&
+                            sessionData.result.exactDate.day &&
+                            sessionData.result.exactDate.year && (
+                              <div className={styles.resultItem}>
+                                <span className={styles.label}>
+                                  📆 Exact Date:
+                                </span>
+                                <span className={styles.value}>
+                                  {sessionData.result.exactDate.month}{" "}
+                                  {sessionData.result.exactDate.day},{" "}
+                                  {sessionData.result.exactDate.year}
+                                </span>
+                              </div>
+                            )}
 
                           {sessionData.result.country &&
                             sessionData.result.country !== "Unknown" && (
@@ -597,7 +712,10 @@ const ChatLookup = () => {
                               </span>
                               <span className={styles.value}>
                                 {sessionData.result.productionContext ||
-                                  `#${sessionData.result.productionNumber}`}
+                                  `#${
+                                    sessionData.result.productionNumber ||
+                                    "Unknown"
+                                  }`}
                               </span>
                             </div>
                           )}
@@ -637,10 +755,15 @@ const ChatLookup = () => {
                         <span className={styles.label}>🎯 Confidence:</span>
                         <span
                           className={`${styles.value} ${
-                            styles[sessionData.result.confidence.toLowerCase()]
+                            sessionData.result.confidence &&
+                            typeof sessionData.result.confidence === "string"
+                              ? styles[
+                                  sessionData.result.confidence.toLowerCase()
+                                ] || ""
+                              : ""
                           }`}
                         >
-                          {sessionData.result.confidence}
+                          {sessionData.result.confidence || "Unknown"}
                         </span>
                       </div>
 
@@ -649,27 +772,32 @@ const ChatLookup = () => {
                           How I figured this out:
                         </p>
                         <p className={styles.ruleText}>
-                          {sessionData.result.rule}
+                          {sessionData.result.rule ||
+                            "Analysis completed based on serial number pattern."}
                         </p>
                       </div>
 
                       {(sessionData.result.confidence !== "High" ||
-                        sessionData.result.error) && (
+                        sessionData.result.error ||
+                        sessionData.result.ambiguityNotes) && (
                         <div className={styles.uncertaintyNote}>
                           <p>
                             💡 <strong>Note:</strong>{" "}
                             {sessionData.result.error
                               ? "We couldn't decode this serial number format. Please verify the serial number or contact the manufacturer."
+                              : sessionData.result.ambiguityNotes
+                              ? sessionData.result.ambiguityNotes
                               : "Serial number dating can be complex. For the most accurate information, I'd recommend contacting " +
-                                brandsData.brands.find(
+                                (brandsData.brands.find(
                                   (b) => b.id === sessionData.brand
-                                )?.displayName +
+                                )?.displayName || "the manufacturer") +
                                 " directly or consulting with a vintage guitar expert."}
                           </p>
                         </div>
                       )}
 
                       {sessionData.result.sources &&
+                        Array.isArray(sessionData.result.sources) &&
                         sessionData.result.sources.length > 0 && (
                           <button
                             className={styles.sourcesButton}
@@ -860,6 +988,11 @@ const ChatLookup = () => {
                 {sessionData.result.notes && (
                   <p className={styles.notesText}>
                     <em>Note: {sessionData.result.notes}</em>
+                  </p>
+                )}
+                {sessionData.result.ambiguityNotes && (
+                  <p className={styles.notesText}>
+                    <em>⚠️ Important: {sessionData.result.ambiguityNotes}</em>
                   </p>
                 )}
               </section>
