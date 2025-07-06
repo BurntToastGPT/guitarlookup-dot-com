@@ -848,3 +848,166 @@
     gap: var(--space-1);
   }
 }
+
+/* Fender Intro Styles */
+.fenderIntro {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-top: var(--space-3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(226, 194, 117, 0.3);
+  position: relative;
+}
+
+.fenderIntro::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: var(--gradient-gold);
+  border-radius: var(--radius-lg);
+  z-index: -1;
+  opacity: 0.3;
+}
+
+.randyIntro h3 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family-serif);
+  color: var(--color-deep-green);
+  margin-bottom: var(--space-3);
+  text-shadow: 0 1px 2px rgba(58, 51, 35, 0.1);
+}
+
+.fenderWarnings {
+  background: rgba(226, 194, 117, 0.1);
+  border: 1px solid rgba(226, 194, 117, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
+}
+
+.fenderWarnings p {
+  margin: 0 0 var(--space-2) 0;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-deep-green);
+}
+
+.fenderWarnings ul {
+  margin: 0;
+  padding-left: var(--space-4);
+  list-style-type: disc;
+}
+
+.fenderWarnings li {
+  margin-bottom: var(--space-1);
+  color: var(--color-charcoal);
+  line-height: 1.5;
+}
+
+.fenderWarnings li:last-child {
+  margin-bottom: 0;
+}
+
+.japaneseInfoButton {
+  padding: var(--space-2) var(--space-4);
+  background: var(--gradient-gold);
+  color: var(--color-deep-green);
+  border: 2px solid var(--color-gold);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: var(--space-3) 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.japaneseInfoButton:hover {
+  background: var(--gradient-gold-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), var(--shadow-glow-gold);
+}
+
+.japaneseInfoButton:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-inset);
+}
+
+.japaneseInfoExpanded {
+  background: rgba(44, 98, 61, 0.05);
+  border: 1px solid rgba(44, 98, 61, 0.15);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.japaneseInfoExpanded p {
+  margin: 0 0 var(--space-2) 0;
+  color: var(--color-charcoal);
+  line-height: 1.6;
+  font-size: var(--font-size-sm);
+}
+
+.japaneseInfoExpanded p:last-child {
+  margin-bottom: 0;
+}
+
+.fenderPrompt {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(226, 194, 117, 0.3);
+}
+
+.fenderPrompt p {
+  margin: 0;
+  color: var(--color-deep-green);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-base);
+}
+
+/* Mobile responsive for Fender intro */
+@media (max-width: 768px) {
+  .fenderIntro {
+    padding: var(--space-3);
+    margin-top: var(--space-2);
+  }
+
+  .randyIntro h3 {
+    font-size: var(--font-size-lg);
+  }
+
+  .fenderWarnings {
+    padding: var(--space-2);
+  }
+
+  .fenderWarnings ul {
+    padding-left: var(--space-3);
+  }
+
+  .japaneseInfoButton {
+    width: 100%;
+    padding: var(--space-3);
+    font-size: var(--font-size-base);
+  }
+
+  .japaneseInfoExpanded {
+    padding: var(--space-2);
+  }
+}

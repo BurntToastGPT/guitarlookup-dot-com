@@ -34,6 +34,7 @@ const ChatLookup = () => {
   const [showSourcesModal, setShowSourcesModal] = useState(false);
   const [shareableUrl, setShareableUrl] = useState(null);
   const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
+  const [showJapaneseInfo, setShowJapaneseInfo] = useState(false);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -284,12 +285,18 @@ const ChatLookup = () => {
     );
   };
 
-  const addMessage = (text, isRandy = false, showResults = false) => {
+  const addMessage = (
+    text,
+    isRandy = false,
+    showResults = false,
+    showFenderIntro = false
+  ) => {
     const newMessage = {
       id: Date.now() + Math.random(),
       isRandy,
-      text: !showResults ? text : undefined,
+      text: !showResults && !showFenderIntro ? text : undefined,
       showResults,
+      showFenderIntro,
     };
     setMessages((prev) => [...prev, newMessage]);
     return newMessage;
@@ -307,13 +314,20 @@ const ChatLookup = () => {
     // Update session data
     setSessionData((prev) => ({ ...prev, brand: brandId }));
 
-    // Randy's response
+    // Randy's response with special handling for Fender
     setTimeout(() => {
-      addMessage(
-        `Great choice! ${brand.displayName} makes some fantastic instruments. Now, can you share the serial number with me? It's usually on the back of the headstock or inside the sound hole.`,
-        true
-      );
-      setCurrentStep("serial");
+      if (brandId === "fender") {
+        // Special Fender introduction with Randy Researcher
+        addMessage(null, true, false, true);
+        setCurrentStep("serial");
+      } else {
+        // Generic response for other brands
+        addMessage(
+          `Great choice! ${brand.displayName} makes some fantastic instruments. Now, can you share the serial number with me? It's usually on the back of the headstock or inside the sound hole.`,
+          true
+        );
+        setCurrentStep("serial");
+      }
     }, 500);
   };
 
@@ -574,6 +588,10 @@ const ChatLookup = () => {
     setShowSourcesModal(false);
   };
 
+  const handleShowJapaneseInfo = () => {
+    setShowJapaneseInfo(true);
+  };
+
   const handleInputSubmit = (e) => {
     e.preventDefault();
     if (currentStep === "brand") {
@@ -624,6 +642,68 @@ const ChatLookup = () => {
                   message={msg.text}
                   showResults={msg.showResults}
                 >
+                  {msg.showFenderIntro && (
+                    <div className={styles.fenderIntro}>
+                      <div className={styles.randyIntro}>
+                        <h3>
+                          Hi! I'm Randy Researcher, here to help date your
+                          Fender guitar.
+                        </h3>
+
+                        <div className={styles.fenderWarnings}>
+                          <p>
+                            <strong>Quick heads-up:</strong>
+                          </p>
+                          <ul>
+                            <li>
+                              We can accurately date most Fender guitars made in
+                              the USA (after 1976) and Mexico (after 1990).
+                            </li>
+                            <li>
+                              We do NOT support Japanese Fender serial numbers
+                              or Squier guitars yet.
+                            </li>
+                          </ul>
+                        </div>
+
+                        <button
+                          className={styles.japaneseInfoButton}
+                          onClick={handleShowJapaneseInfo}
+                        >
+                          How do I know if mine is Japanese?
+                        </button>
+
+                        {showJapaneseInfo && (
+                          <div className={styles.japaneseInfoExpanded}>
+                            <p>
+                              Most Japanese Fenders say "Made in Japan" or
+                              "Crafted in Japan" on the guitar (usually on the
+                              headstock or neck).
+                            </p>
+                            <p>
+                              The serial usually starts with two letters like
+                              "JV", "SQ", "E", "A", or "JD", often on the back
+                              of the neck or neck plate.
+                            </p>
+                            <p>
+                              If your serial doesn't start with US, MX, MN, MZ,
+                              S, E, N, or Z, and you see "Made in Japan," it's
+                              probably not supported yet by this tool!
+                            </p>
+                          </div>
+                        )}
+
+                        <div className={styles.fenderPrompt}>
+                          <p>
+                            Now, can you share the serial number with me? It's
+                            usually on the back of the headstock or inside the
+                            sound hole.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {msg.showResults &&
                     sessionData.result &&
                     typeof sessionData.result === "object" && (
@@ -838,16 +918,8 @@ const ChatLookup = () => {
                     >
                       <option value="">-- Choose a brand --</option>
                       {options.map((opt) => (
-                        <option
-                          key={opt.value}
-                          value={opt.value}
-                          disabled={opt.value !== "gibson"}
-                          className={
-                            opt.value !== "gibson" ? styles.disabledOption : ""
-                          }
-                        >
-                          {opt.label}{" "}
-                          {opt.value !== "gibson" ? "(Coming Soon)" : ""}
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
                         </option>
                       ))}
                     </select>

@@ -316,48 +316,173 @@ const matchesPatternSingle = (serial, pattern) => {
 export const decodeFenderSerial = (serial) => {
   const upperSerial = serial.toUpperCase();
 
-  // Modern Fender serials often start with letters indicating country/year
-  if (upperSerial.startsWith("US") || upperSerial.startsWith("Z")) {
-    const yearDigits = upperSerial.match(/\d{1,2}/);
-    if (yearDigits) {
-      const year = parseInt(yearDigits[0]);
-      return {
-        years: [`20${year.toString().padStart(2, "0")}`],
-        country: "USA",
-        confidence: "High",
-        rule: "US/Z prefix indicates American-made, followed by year digits",
-      };
+  // Helper function to extract year from letter+digit patterns
+  const extractYearFromLetterSerial = (serial, startIndex = 1) => {
+    const yearMatch = serial.substring(startIndex).match(/^(\d{1,2})/);
+    if (yearMatch) {
+      let year = parseInt(yearMatch[1]);
+      // For 1-digit years, assume 2000s for 0-9
+      if (year < 10 && yearMatch[1].length === 1) {
+        year = 2000 + year;
+      }
+      // For 2-digit years, handle century logic
+      else if (year < 100) {
+        // Years 50-99 are 1950s-1990s, 00-49 are 2000s-2040s
+        year = year >= 50 ? 1900 + year : 2000 + year;
+      }
+      return year;
     }
-  }
+    return null;
+  };
 
-  if (upperSerial.startsWith("MX")) {
-    const yearDigits = upperSerial.match(/\d{1,2}/);
-    if (yearDigits) {
-      const year = parseInt(yearDigits[0]);
-      return {
-        years: [`20${year.toString().padStart(2, "0")}`],
-        country: "Mexico",
-        confidence: "High",
-        rule: "MX prefix indicates Mexican-made, followed by year digits",
-      };
-    }
-  }
+  // Japanese Serial Detection - Check first to avoid false positives
+  const japanesePatterns = [
+    /^JV/, // Japanese Vintage series
+    /^SQ/, // Squier Japan
+    /^E\d/, // Export models (could be Japanese)
+    /^A\d/, // Could be Japanese (Aria, etc.)
+    /^JD/, // Japanese Domestic
+    /^CIJ/, // Crafted in Japan
+    /^MIJ/, // Made in Japan
+    /^T\d/, // Terada (Japanese manufacturer)
+    /^O\d/, // Could be Japanese Orville
+    /^P\d{6}/, // Some Japanese serials start with P + 6 digits
+  ];
 
-  // Check if it needs clarification
-  if (/^[0-9]+$/.test(serial) && serial.length >= 6) {
+  // Check if serial matches Japanese patterns
+  const looksJapanese = japanesePatterns.some((pattern) =>
+    pattern.test(upperSerial)
+  );
+
+  if (looksJapanese) {
     return {
-      needsClarification: true,
-      question: "Where is your serial number located?",
-      options: ["On the headstock", "On the neck plate", "Inside the body"],
-      reason: "All-numeric serials need location info to determine era",
+      years: ["Unknown"],
+      country: "Japan",
+      confidence: "High",
+      rule: "This looks like a Japanese Fender serial number. Sorry, we can't date those yet! Click the button above for tips on identifying Japanese Fenders.",
+      isJapanese: true,
     };
   }
 
+  // US/Corona post-1976 patterns (letter + digits)
+  // Common US prefixes: S, E, N, Z, US, DZ, etc.
+  const usPatterns = [
+    /^(S|E|N|Z|DZ|US)(\d{1,2})/, // Single or double letter + 1-2 digits
+    /^(CD|CN|CO|CZ)(\d{1,2})/, // Corona plant codes
+    /^(V|R|T|B)(\d{1,2})/, // Other US prefix patterns
+  ];
+
+  for (const pattern of usPatterns) {
+    const match = upperSerial.match(pattern);
+    if (match) {
+      const prefix = match[1];
+      const yearDigits = match[2];
+      let year = parseInt(yearDigits);
+
+      // Handle year logic for US serials
+      if (yearDigits.length === 1) {
+        // Single digit: 0-9 typically means 2000s
+        year = 2000 + year;
+      } else if (yearDigits.length === 2) {
+        // Two digits: 76-99 = 1976-1999, 00-49 = 2000-2049
+        year = year >= 76 ? 1900 + year : 2000 + year;
+      }
+
+      return {
+        years: [year.toString()],
+        country: "USA",
+        confidence: "High",
+        rule: `${prefix} prefix indicates US-made Fender from Corona plant, year: ${year}`,
+        plantCode: prefix,
+        decodedValues: {
+          "Plant Code": prefix,
+          Year: year.toString(),
+          Location: "Corona, California, USA",
+        },
+      };
+    }
+  }
+
+  // Mexico post-1990 patterns (MN/MZ/MX prefixes)
+  const mexicanPatterns = [
+    /^(MN|MZ|MX)(\d{1,2})/, // Standard Mexican prefixes
+    /^(MA|MC|MD|ME|MF|MG|MH|MI|MJ|MK|ML|MM|MO|MP|MQ|MR|MS|MT|MU|MV|MW|MY)(\d{1,2})/, // Extended Mexican codes
+  ];
+
+  for (const pattern of mexicanPatterns) {
+    const match = upperSerial.match(pattern);
+    if (match) {
+      const prefix = match[1];
+      const yearDigits = match[2];
+      let year = parseInt(yearDigits);
+
+      // Mexican serials started in 1990, so adjust year logic
+      if (yearDigits.length === 1) {
+        // Single digit: assume 1990s-2000s
+        year = year >= 0 && year <= 9 ? 2000 + year : 1990 + year;
+      } else if (yearDigits.length === 2) {
+        // Two digits: 90-99 = 1990-1999, 00-49 = 2000-2049
+        year = year >= 90 ? 1900 + year : 2000 + year;
+      }
+
+      return {
+        years: [year.toString()],
+        country: "Mexico",
+        confidence: "High",
+        rule: `${prefix} prefix indicates Mexican-made Fender from Ensenada plant, year: ${year}`,
+        plantCode: prefix,
+        decodedValues: {
+          "Plant Code": prefix,
+          Year: year.toString(),
+          Location: "Ensenada, Mexico",
+        },
+      };
+    }
+  }
+
+  // Pre-1976 all-numeric serials - need location clarification
+  if (/^[0-9]+$/.test(serial) && serial.length >= 4) {
+    return {
+      needsClarification: true,
+      question: "Where is your serial number located?",
+      options: [
+        "On the headstock (front or back)",
+        "On the neck plate (back of guitar)",
+        "Inside the body (f-hole or pickup cavity)",
+        "On the neck heel",
+      ],
+      reason:
+        "All-numeric serials can be from different eras depending on location. This helps us determine the correct dating system.",
+      serialType: "all-numeric",
+    };
+  }
+
+  // Check for other recognizable but unsupported patterns
+  const otherPatterns = [
+    /^[A-Z]{3,4}\d/, // 3-4 letter prefix + digits (could be import)
+    /^[A-Z]\d{7,8}/, // Single letter + 7-8 digits (could be import)
+    /^\d{4}[A-Z]/, // 4 digits + letter (could be special format)
+  ];
+
+  for (const pattern of otherPatterns) {
+    if (pattern.test(upperSerial)) {
+      return {
+        years: ["Unknown"],
+        country: "Unknown",
+        confidence: "Low",
+        rule: "This serial format is recognized but not yet supported in our database. It may be from an import model or special series.",
+        needsResearch: true,
+      };
+    }
+  }
+
+  // Invalid or unrecognized format
   return {
     years: ["Unknown"],
     country: "Unknown",
     confidence: "Low",
-    rule: "Serial format not recognized in our database",
+    rule: "This serial format is not recognized in our database. Please double-check the serial number or contact Fender directly.",
+    error: true,
   };
 };
 
@@ -1028,13 +1153,167 @@ export const processClarification = (brand, serial, answer) => {
     rule: "Clarification helped narrow down possibilities",
   };
 
-  if (brand === "fender" && answer === "On the neck plate") {
+  // Enhanced Fender all-numeric serial processing
+  if (brand === "fender") {
+    const numericSerial = parseInt(serial);
+
+    if (answer === "On the neck plate (back of guitar)") {
+      // Neck plate serials - vintage era dating
+      if (numericSerial >= 1 && numericSerial <= 6000) {
+        return {
+          years: ["1950-1954"],
+          country: "USA",
+          confidence: "High",
+          rule: "Early Fender production, very rare instruments",
+          decodedValues: {
+            "Serial Range": "1-6,000",
+            Years: "1950-1954",
+            Location: "Neck plate",
+            Note: "Very early Fender production",
+          },
+        };
+      } else if (numericSerial >= 6001 && numericSerial <= 25000) {
+        return {
+          years: ["1954-1956"],
+          country: "USA",
+          confidence: "High",
+          rule: "Early Stratocaster and Telecaster era",
+          decodedValues: {
+            "Serial Range": "6,001-25,000",
+            Years: "1954-1956",
+            Location: "Neck plate",
+            Note: "Early Stratocaster introduction period",
+          },
+        };
+      } else if (numericSerial >= 25001 && numericSerial <= 30000) {
+        return {
+          years: ["1956-1957"],
+          country: "USA",
+          confidence: "High",
+          rule: "Mid-1950s Fender production",
+          decodedValues: {
+            "Serial Range": "25,001-30,000",
+            Years: "1956-1957",
+            Location: "Neck plate",
+          },
+        };
+      } else if (numericSerial >= 30001 && numericSerial <= 40000) {
+        return {
+          years: ["1957-1958"],
+          country: "USA",
+          confidence: "High",
+          rule: "Late 1950s production",
+          decodedValues: {
+            "Serial Range": "30,001-40,000",
+            Years: "1957-1958",
+            Location: "Neck plate",
+          },
+        };
+      } else if (numericSerial >= 40001 && numericSerial <= 70000) {
+        return {
+          years: ["1958-1961"],
+          country: "USA",
+          confidence: "High",
+          rule: "Late 1950s to early 1960s production",
+          decodedValues: {
+            "Serial Range": "40,001-70,000",
+            Years: "1958-1961",
+            Location: "Neck plate",
+          },
+        };
+      } else if (numericSerial >= 70001 && numericSerial <= 99999) {
+        return {
+          years: ["1961-1962"],
+          country: "USA",
+          confidence: "High",
+          rule: "Early 1960s production",
+          decodedValues: {
+            "Serial Range": "70,001-99,999",
+            Years: "1961-1962",
+            Location: "Neck plate",
+          },
+        };
+      } else if (numericSerial >= 100000) {
+        return {
+          years: ["1962-1976"],
+          country: "USA",
+          confidence: "Medium",
+          rule: "1960s-1970s production - overlapping ranges make exact dating difficult",
+          decodedValues: {
+            "Serial Range": "100,000+",
+            Years: "1962-1976",
+            Location: "Neck plate",
+            Note: "Serial ranges overlap during this period",
+          },
+        };
+      }
+    } else if (answer === "On the headstock (front or back)") {
+      // Headstock serials - could be post-1976 or transition period
+      if (numericSerial >= 100000 && numericSerial <= 200000) {
+        return {
+          years: ["1976-1982"],
+          country: "USA",
+          confidence: "Medium",
+          rule: "Transition period - moved from neck plate to headstock",
+          decodedValues: {
+            "Serial Range": "100,000-200,000",
+            Years: "1976-1982",
+            Location: "Headstock",
+            Note: "Transition period with some overlap",
+          },
+        };
+      } else if (numericSerial >= 200000) {
+        return {
+          years: ["1982-1990"],
+          country: "USA",
+          confidence: "Medium",
+          rule: "1980s American-made Fender",
+          decodedValues: {
+            "Serial Range": "200,000+",
+            Years: "1982-1990",
+            Location: "Headstock",
+            Note: "Pre-letter prefix era",
+          },
+        };
+      }
+    } else if (answer === "Inside the body (f-hole or pickup cavity)") {
+      // Body cavity serials - could be various eras
+      return {
+        years: ["1950-1990"],
+        country: "USA",
+        confidence: "Low",
+        rule: "Body cavity serials can be from various periods - exact dating requires professional examination",
+        decodedValues: {
+          "Serial Number": serial,
+          Location: "Body cavity",
+          Note: "Dating requires additional guitar details",
+        },
+      };
+    } else if (answer === "On the neck heel") {
+      // Neck heel serials - various periods
+      return {
+        years: ["1950-1980"],
+        country: "USA",
+        confidence: "Low",
+        rule: "Neck heel serials appear on various models across different periods",
+        decodedValues: {
+          "Serial Number": serial,
+          Location: "Neck heel",
+          Note: "Dating requires model identification",
+        },
+      };
+    }
+
+    // Default fallback for unrecognized numeric serials
     return {
-      ...baseResult,
-      years: ["1954-1976"],
+      years: ["1950-1990"],
       country: "USA",
-      confidence: "Medium",
-      rule: "Neck plate serials typically indicate vintage era Fenders",
+      confidence: "Low",
+      rule: "All-numeric Fender serial from vintage era - exact dating requires more details",
+      decodedValues: {
+        "Serial Number": serial,
+        Note: "Vintage-era Fender serial number",
+      },
     };
   }
 
