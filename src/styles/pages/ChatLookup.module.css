@@ -28,8 +28,8 @@
 
 /* Main Chat Card - glassmorphic floating design with Marshall-style piping */
 .chatCard {
-  width: 65vw;
-  max-width: 900px;
+  width: 75vw;
+  max-width: 1200px;
   min-width: 320px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(6px);
@@ -40,8 +40,8 @@
   flex-direction: column;
   margin: 0 auto;
   height: 85vh;
-  max-height: 800px;
-  min-height: 600px;
+  max-height: 1000px;
+  min-height: 650px;
   /* Marshall JCM 800 style piping border */
   border: 3px solid var(--color-deep-green);
   position: relative;
@@ -121,7 +121,7 @@
 
 .messagesArea {
   flex: 1;
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-6) var(--space-8);
   overflow-y: auto;
   overflow-x: visible;
   scroll-behavior: smooth;
@@ -233,72 +233,8 @@
   z-index: 2; /* Above the inner piping */
 }
 
-/* Share Notice - glassmorphic styling */
-.shareNoticeInternal {
-  padding: var(--space-3) var(--space-6);
-  background: rgba(226, 194, 117, 0.1);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid rgba(226, 194, 117, 0.2);
-}
-
-.shareNoticeInternal p {
-  margin: 0 0 var(--space-2) 0;
-  color: var(--color-deep-green);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  text-align: center;
-}
-
-.shareActions {
-  display: flex;
-  gap: var(--space-3);
-  align-items: stretch;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.shareInput {
-  flex: 1;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid rgba(58, 51, 35, 0.2);
-  border-radius: var(--radius-md);
-  background: white;
-  font-family: monospace;
-  font-size: var(--font-size-sm);
-  color: var(--color-charcoal);
-  cursor: text;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.shareInput:focus {
-  outline: none;
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 3px rgba(226, 194, 117, 0.2);
-}
-
-.copyButton {
-  padding: var(--space-2) var(--space-4);
-  background: var(--gradient-gold);
-  color: var(--color-deep-green);
-  border: 1px solid var(--border-gold-accent);
-  border-radius: var(--radius-md);
-  font-weight: var(--font-weight-bold);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  box-shadow: var(--shadow-sm), inset 0 1px 0 var(--highlight-gold);
-}
-
-.copyButton:hover {
-  background: var(--gradient-gold-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md), var(--shadow-glow-gold),
-    inset 0 1px 0 var(--highlight-gold);
-}
-
 .inputArea {
-  padding: var(--space-3) var(--space-6);
+  padding: var(--space-4) var(--space-8);
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(8px);
   position: relative;
@@ -399,6 +335,7 @@
   gap: var(--space-2);
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .completedActions button {
@@ -728,6 +665,24 @@
   font-weight: var(--font-weight-medium);
 }
 
+/* Tablet responsive */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .chatCard {
+    width: 80vw;
+    max-width: 1000px;
+    height: 80vh;
+    max-height: 900px;
+  }
+
+  .messagesArea {
+    padding: var(--space-5) var(--space-7);
+  }
+
+  .inputArea {
+    padding: var(--space-4) var(--space-7);
+  }
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .container {
@@ -757,7 +712,7 @@
   }
 
   .messagesArea {
-    padding: var(--space-4) var(--space-5);
+    padding: var(--space-5) var(--space-6);
   }
 
   .optionsContainer {
@@ -767,7 +722,7 @@
   }
 
   .inputArea {
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-3) var(--space-5);
   }
 
   .completedActions {
@@ -780,18 +735,6 @@
     width: 100%;
     padding: var(--space-2) var(--space-3);
     font-size: var(--font-size-sm);
-  }
-
-  .shareNoticeInternal {
-    padding: var(--space-2) var(--space-3);
-  }
-
-  .shareActions {
-    flex-direction: column;
-  }
-
-  .copyButton {
-    width: 100%;
   }
 }
 

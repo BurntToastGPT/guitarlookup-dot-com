@@ -276,15 +276,40 @@ const FenderEnhancedResults = ({ decodingResult, guitarData, isSupported }) => {
               <h4 className={styles.optionTitle}>🏪 Visit a Music Store</h4>
               <p className={styles.optionText}>
                 Local guitar shops often have experienced staff who can help
-                identify your instrument and provide maintenance advice.
+                identify your instrument and provide maintenance advice.{" "}
+                <a
+                  href="https://www.google.com/search?q=guitar+stores+near+me"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.resourceLink}
+                >
+                  Find one now!
+                </a>
               </p>
             </div>
 
             <div className={styles.helpOption}>
               <h4 className={styles.optionTitle}>💬 Join Communities</h4>
               <p className={styles.optionText}>
-                Online forums like the Telecaster Discussion Page or Reddit's
-                r/guitars have knowledgeable communities willing to help.
+                Online forums like the{" "}
+                <a
+                  href="https://www.tdpri.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.resourceLink}
+                >
+                  Telecaster Discussion Page
+                </a>{" "}
+                or Reddit's{" "}
+                <a
+                  href="https://www.reddit.com/r/fender"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.resourceLink}
+                >
+                  r/Fender
+                </a>{" "}
+                have knowledgeable communities willing to help.
               </p>
             </div>
           </div>

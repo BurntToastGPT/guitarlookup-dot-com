@@ -1027,20 +1027,24 @@ const ChatLookup = () => {
             </div>
 
             <div className={styles.bottomArea}>
-              {/* Share URL notice inside the card */}
-              {currentStep === "complete" && (
-                <div className={styles.shareNoticeInternal}>
-                  <p>📎 Share this lookup:</p>
-                  <div className={styles.shareActions}>
-                    <input
-                      type="text"
-                      value={shareableUrl || window.location.href}
-                      readOnly
-                      className={styles.shareInput}
-                      onClick={(e) => e.target.select()}
-                    />
-                    <button
-                      className={styles.copyButton}
+              <div className={styles.inputArea}>
+                {currentStep === "complete" ? (
+                  <div className={styles.completedActions}>
+                    <Button
+                      onClick={() => navigate("/feedback")}
+                      variant="primary"
+                      size="large"
+                    >
+                      Help Randy Improve
+                    </Button>
+                    <Button
+                      onClick={handleNewLookup}
+                      variant="secondary"
+                      size="medium"
+                    >
+                      Look Up Another Guitar
+                    </Button>
+                    <Button
                       onClick={() => {
                         const urlToCopy = shareableUrl || window.location.href;
                         navigator.clipboard
@@ -1059,29 +1063,10 @@ const ChatLookup = () => {
                             alert("Link copied to clipboard!");
                           });
                       }}
-                    >
-                      Copy Link
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className={styles.inputArea}>
-                {currentStep === "complete" ? (
-                  <div className={styles.completedActions}>
-                    <Button
-                      onClick={() => navigate("/feedback")}
-                      variant="primary"
-                      size="large"
-                    >
-                      Help Randy Improve
-                    </Button>
-                    <Button
-                      onClick={handleNewLookup}
                       variant="secondary"
                       size="medium"
                     >
-                      Look Up Another Guitar
+                      Copy Link
                     </Button>
                   </div>
                 ) : (
