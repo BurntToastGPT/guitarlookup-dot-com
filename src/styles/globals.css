@@ -24,6 +24,7 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  padding-top: 80px; /* Account for smaller fixed ticker */
 }
 
 /* Blurred luthier workbench background */
@@ -206,6 +207,10 @@ a:hover {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  body {
+    padding-top: 70px; /* Smaller padding for mobile */
+  }
+
   h1 {
     font-size: var(--font-size-4xl);
   }
@@ -220,5 +225,11 @@ a:hover {
 
   .page-wrapper {
     padding: var(--space-6) var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-top: 60px; /* Even smaller padding for small mobile */
   }
 }

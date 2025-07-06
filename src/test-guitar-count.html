@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guitar Count Calculator Test</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .test-section {
+        background: #f5f5f5;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+      }
+      .test-result {
+        background: #e8f5e8;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        border-left: 4px solid #4caf50;
+      }
+      .test-error {
+        background: #ffeaea;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        border-left: 4px solid #f44336;
+      }
+      .live-count {
+        font-size: 2em;
+        font-weight: bold;
+        color: #2c3e50;
+        text-align: center;
+        padding: 20px;
+        background: #ecf0f1;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .digit-array {
+        font-family: "Courier New", monospace;
+        font-size: 1.2em;
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 10px;
+        border-radius: 4px;
+        text-align: center;
+        margin: 10px 0;
+      }
+      button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #2980b9;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎸 Guitar Count Calculator Test Page</h1>
+
+    <div class="test-section">
+      <h2>Live Guitar Count</h2>
+      <div id="live-count" class="live-count">Loading...</div>
+      <div id="digit-array" class="digit-array">Loading...</div>
+      <p id="last-updated">Last updated: -</p>
+    </div>
+
+    <div class="test-section">
+      <h2>Test Controls</h2>
+      <button onclick="runBasicTests()">Run Basic Tests</button>
+      <button onclick="runDigitChangeTests()">Run Digit Change Tests</button>
+      <button onclick="runAnimationTests()">Run Animation Tests</button>
+      <button onclick="runPerformanceTests()">Run Performance Tests</button>
+      <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div id="test-results"></div>
+
+    <script type="module">
+      // Import our utility functions
+      import {
+        BASE_COUNT,
+        BASE_DATE,
+        GUITARS_PER_SECOND,
+        getCurrentGuitarCount,
+        formatGuitarCount,
+        getDigitArray,
+        getGuitarCountData,
+        getProjectedGuitarCount,
+      } from "./utils/guitarCountCalculator.js";
+
+      import {
+        getChangingDigits,
+        getAnimationDelay,
+        getAnimationDuration,
+        getSplitFlapAnimationStyles,
+        isValidDigitArray,
+        padDigitArray,
+        getTotalAnimationTime,
+      } from "./utils/splitFlapHelpers.js";
+
+      // Make functions available globally for button clicks
+      window.guitarCountUtils = {
+        BASE_COUNT,
+        BASE_DATE,
+        GUITARS_PER_SECOND,
+        getCurrentGuitarCount,
+        formatGuitarCount,
+        getDigitArray,
+        getGuitarCountData,
+        getProjectedGuitarCount,
+        getChangingDigits,
+        getAnimationDelay,
+        getAnimationDuration,
+        getSplitFlapAnimationStyles,
+        isValidDigitArray,
+        padDigitArray,
+        getTotalAnimationTime,
+      };
+
+      // Live count update
+      function updateLiveCount() {
+        try {
+          const countData = getGuitarCountData();
+          document.getElementById("live-count").textContent =
+            countData.formatted;
+          document.getElementById(
+            "digit-array"
+          ).textContent = `[${countData.digitArray.join(", ")}]`;
+          document.getElementById(
+            "last-updated"
+          ).textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        } catch (error) {
+          console.error("Error updating live count:", error);
+        }
+      }
+
+      // Start live updates
+      updateLiveCount();
+      setInterval(updateLiveCount, 1000);
+
+      // Make test functions available globally
+      window.runBasicTests = () => runBasicTests();
+      window.runDigitChangeTests = () => runDigitChangeTests();
+      window.runAnimationTests = () => runAnimationTests();
+      window.runPerformanceTests = () => runPerformanceTests();
+      window.clearResults = () => clearResults();
+
+      function addTestResult(title, content, isError = false) {
+        const resultsDiv = document.getElementById("test-results");
+        const resultDiv = document.createElement("div");
+        resultDiv.className = isError ? "test-error" : "test-result";
+        resultDiv.innerHTML = `<strong>${title}</strong><br>${content}`;
+        resultsDiv.appendChild(resultDiv);
+      }
+
+      function runBasicTests() {
+        addTestResult("Basic Tests", "Running basic functionality tests...");
+
+        try {
+          // Test 1: Base count calculation
+          const baseCount = getCurrentGuitarCount(BASE_DATE);
+          const baseTest = baseCount === BASE_COUNT;
+          addTestResult(
+            "Base Count Test",
+            `Count at base date: ${formatGuitarCount(baseCount)}<br>` +
+              `Expected: ${formatGuitarCount(BASE_COUNT)}<br>` +
+              `✅ ${baseTest ? "PASS" : "FAIL"}`,
+            !baseTest
+          );
+
+          // Test 2: Future count calculation
+          const futureDate = new Date(BASE_DATE.getTime() + 3600000); // 1 hour later
+          const futureCount = getCurrentGuitarCount(futureDate);
+          const expectedIncrease = 3600 * GUITARS_PER_SECOND;
+          const actualIncrease = futureCount - baseCount;
+          const increaseTest = Math.abs(actualIncrease - expectedIncrease) < 1;
+          addTestResult(
+            "Time Progression Test",
+            `Count after 1 hour: ${formatGuitarCount(futureCount)}<br>` +
+              `Expected increase: ${expectedIncrease.toFixed(2)}<br>` +
+              `Actual increase: ${actualIncrease.toFixed(2)}<br>` +
+              `✅ ${increaseTest ? "PASS" : "FAIL"}`,
+            !increaseTest
+          );
+
+          // Test 3: Number formatting
+          const testNumbers = [8000000, 8000123, 12345678];
+          let formatTest = true;
+          let formatResults = "";
+          testNumbers.forEach((num) => {
+            const formatted = formatGuitarCount(num);
+            const hasCommas = formatted.includes(",");
+            formatTest = formatTest && hasCommas;
+            formatResults += `${num} → "${formatted}"<br>`;
+          });
+          addTestResult(
+            "Number Formatting Test",
+            formatResults + `✅ ${formatTest ? "PASS" : "FAIL"}`,
+            !formatTest
+          );
+
+          // Test 4: Digit array creation
+          const digitArray = getDigitArray(8000123);
+          const expectedArray = ["8", ",", "0", "0", "0", ",", "1", "2", "3"];
+          const arrayTest =
+            JSON.stringify(digitArray) === JSON.stringify(expectedArray);
+          addTestResult(
+            "Digit Array Test",
+            `Input: 8000123<br>` +
+              `Result: [${digitArray.join(", ")}]<br>` +
+              `Expected: [${expectedArray.join(", ")}]<br>` +
+              `✅ ${arrayTest ? "PASS" : "FAIL"}`,
+            !arrayTest
+          );
+        } catch (error) {
+          addTestResult("Basic Tests Error", `Error: ${error.message}`, true);
+        }
+      }
+
+      function runDigitChangeTests() {
+        addTestResult(
+          "Digit Change Tests",
+          "Running digit change detection tests..."
+        );
+
+        try {
+          // Test simple digit change
+          const changes1 = getChangingDigits(8000123, 8000124);
+          const simpleTest = changes1.length === 1 && changes1[0] === 8;
+          addTestResult(
+            "Simple Digit Change",
+            `8000123 → 8000124<br>` +
+              `Changing indices: [${changes1.join(", ")}]<br>` +
+              `Expected: [8]<br>` +
+              `✅ ${simpleTest ? "PASS" : "FAIL"}`,
+            !simpleTest
+          );
+
+          // Test rollover change
+          const changes2 = getChangingDigits(8000999, 8001000);
+          const rolloverTest = changes2.length > 1;
+          addTestResult(
+            "Rollover Change",
+            `8000999 → 8001000<br>` +
+              `Changing indices: [${changes2.join(", ")}]<br>` +
+              `Multiple changes: ${rolloverTest}<br>` +
+              `✅ ${rolloverTest ? "PASS" : "FAIL"}`,
+            !rolloverTest
+          );
+
+          // Test no change
+          const changes3 = getChangingDigits(8000123, 8000123);
+          const noChangeTest = changes3.length === 0;
+          addTestResult(
+            "No Change Test",
+            `8000123 → 8000123<br>` +
+              `Changing indices: [${changes3.join(", ")}]<br>` +
+              `Expected: []<br>` +
+              `✅ ${noChangeTest ? "PASS" : "FAIL"}`,
+            !noChangeTest
+          );
+        } catch (error) {
+          addTestResult(
+            "Digit Change Tests Error",
+            `Error: ${error.message}`,
+            true
+          );
+        }
+      }
+
+      function runAnimationTests() {
+        addTestResult("Animation Tests", "Running animation helper tests...");
+
+        try {
+          // Test animation delays
+          const changingIndices = [6, 7, 8];
+          let delayTest = true;
+          let delayResults = "";
+
+          changingIndices.forEach((index, i) => {
+            const delay = getAnimationDelay(index, changingIndices);
+            const expectedDelay = i * 100; // STAGGER = 100ms
+            delayTest = delayTest && delay === expectedDelay;
+            delayResults += `Index ${index}: ${delay}ms (expected: ${expectedDelay}ms)<br>`;
+          });
+
+          addTestResult(
+            "Animation Delay Test",
+            delayResults + `✅ ${delayTest ? "PASS" : "FAIL"}`,
+            !delayTest
+          );
+
+          // Test animation duration
+          const singleDuration = getAnimationDuration([8]);
+          const multipleDuration = getAnimationDuration([6, 7, 8]);
+          const durationTest = multipleDuration > singleDuration;
+          addTestResult(
+            "Animation Duration Test",
+            `Single digit: ${singleDuration}ms<br>` +
+              `Multiple digits: ${multipleDuration}ms<br>` +
+              `Multiple > Single: ${durationTest}<br>` +
+              `✅ ${durationTest ? "PASS" : "FAIL"}`,
+            !durationTest
+          );
+
+          // Test total animation time
+          const totalTime = getTotalAnimationTime([6, 7, 8]);
+          const expectedTotal = multipleDuration + 2 * 100; // duration + max delay
+          const totalTest = totalTime === expectedTotal;
+          addTestResult(
+            "Total Animation Time Test",
+            `Total time: ${totalTime}ms<br>` +
+              `Expected: ${expectedTotal}ms<br>` +
+              `✅ ${totalTest ? "PASS" : "FAIL"}`,
+            !totalTest
+          );
+        } catch (error) {
+          addTestResult(
+            "Animation Tests Error",
+            `Error: ${error.message}`,
+            true
+          );
+        }
+      }
+
+      function runPerformanceTests() {
+        addTestResult("Performance Tests", "Running performance tests...");
+
+        try {
+          const iterations = 1000;
+          const startTime = performance.now();
+
+          for (let i = 0; i < iterations; i++) {
+            getCurrentGuitarCount();
+            formatGuitarCount(8000000 + i);
+            getDigitArray(8000000 + i);
+          }
+
+          const endTime = performance.now();
+          const totalTime = endTime - startTime;
+          const avgTime = totalTime / iterations;
+          const performanceTest = avgTime < 5; // Allow 5ms per iteration in browser
+
+          addTestResult(
+            "Performance Test",
+            `${iterations} iterations: ${totalTime.toFixed(2)}ms<br>` +
+              `Average per iteration: ${avgTime.toFixed(4)}ms<br>` +
+              `Performance acceptable: ${performanceTest}<br>` +
+              `✅ ${performanceTest ? "PASS" : "FAIL"}`,
+            !performanceTest
+          );
+        } catch (error) {
+          addTestResult(
+            "Performance Tests Error",
+            `Error: ${error.message}`,
+            true
+          );
+        }
+      }
+
+      function clearResults() {
+        document.getElementById("test-results").innerHTML = "";
+      }
+
+      // Add some initial info
+      addTestResult(
+        "System Info",
+        `Base Count: ${formatGuitarCount(BASE_COUNT)}<br>` +
+          `Base Date: ${BASE_DATE.toISOString()}<br>` +
+          `Growth Rate: ${GUITARS_PER_SECOND.toFixed(6)} guitars/second<br>` +
+          `Daily Growth: ${(GUITARS_PER_SECOND * 86400).toFixed(
+            0
+          )} guitars/day<br>` +
+          `Yearly Growth: ${(GUITARS_PER_SECOND * 86400 * 365.25).toFixed(
+            0
+          )} guitars/year`
+      );
+    </script>
+  </body>
+</html>

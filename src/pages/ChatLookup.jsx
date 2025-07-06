@@ -4,6 +4,8 @@ import ChatMessage from "../components/chat/ChatMessage";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import FenderEnhancedResults from "../components/results/FenderEnhancedResults";
+import SplitFlapTicker from "../components/ticker/SplitFlapTicker";
+import BrandsTicker from "../components/ticker/BrandsTicker";
 import brandsData from "../data/brands.json";
 import { decodeSerial, decodeGibsonSerial } from "../utils/serialDecoder";
 import {
@@ -352,7 +354,11 @@ const ChatLookup = () => {
     setMessages(initialMessages);
     setShowOptions(true);
     setOptions(
-      brandsData.brands.map((b) => ({ value: b.id, label: b.displayName }))
+      brandsData.brands.map((b) => ({
+        value: b.id,
+        label: b.displayName,
+        disabled: !b.supported,
+      }))
     );
   };
 
@@ -701,7 +707,13 @@ const ChatLookup = () => {
       <div className={styles.chatCard}>
         <div className={styles.innerContent}>
           <div className={styles.chatHeader}>
+            <div className={styles.brandsTickerSection}>
+              <BrandsTicker />
+            </div>
             <h1 className={styles.logoText}>GuitarLookup</h1>
+            <div className={styles.guitarTickerSection}>
+              <SplitFlapTicker />
+            </div>
             <div className={styles.goldAccent}></div>
           </div>
           <div className={styles.chatWindow}>
@@ -995,15 +1007,32 @@ const ChatLookup = () => {
                   {currentStep === "brand" ? (
                     <select
                       className={styles.brandSelect}
-                      onChange={(e) =>
-                        e.target.value && handleBrandSelect(e.target.value)
-                      }
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          const selectedOption = options.find(
+                            (opt) => opt.value === e.target.value
+                          );
+                          if (!selectedOption?.disabled) {
+                            handleBrandSelect(e.target.value);
+                          }
+                        }
+                      }}
                       value=""
                     >
                       <option value="">-- Choose a brand --</option>
                       {options.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
+                        <option
+                          key={opt.value}
+                          value={opt.value}
+                          disabled={opt.disabled}
+                          style={
+                            opt.disabled
+                              ? { color: "#999", fontStyle: "italic" }
+                              : {}
+                          }
+                        >
                           {opt.label}
+                          {opt.disabled ? " (Coming Soon)" : ""}
                         </option>
                       ))}
                     </select>

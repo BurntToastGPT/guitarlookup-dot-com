@@ -3,52 +3,62 @@
     {
       "id": "fender",
       "name": "Fender",
-      "displayName": "Fender"
+      "displayName": "Fender",
+      "supported": true
     },
     {
       "id": "gibson",
       "name": "Gibson",
-      "displayName": "Gibson"
+      "displayName": "Gibson",
+      "supported": false
     },
     {
       "id": "martin",
       "name": "Martin",
-      "displayName": "Martin"
+      "displayName": "Martin",
+      "supported": false
     },
     {
       "id": "taylor",
       "name": "Taylor",
-      "displayName": "Taylor"
+      "displayName": "Taylor",
+      "supported": false
     },
     {
       "id": "ibanez",
       "name": "Ibanez",
-      "displayName": "Ibanez"
+      "displayName": "Ibanez",
+      "supported": false
     },
     {
       "id": "yamaha",
       "name": "Yamaha",
-      "displayName": "Yamaha"
+      "displayName": "Yamaha",
+      "supported": false
     },
     {
       "id": "prs",
       "name": "PRS",
-      "displayName": "PRS (Paul Reed Smith)"
+      "displayName": "PRS (Paul Reed Smith)",
+      "supported": false
     },
     {
       "id": "gretsch",
       "name": "Gretsch",
-      "displayName": "Gretsch"
+      "displayName": "Gretsch",
+      "supported": false
     },
     {
       "id": "epiphone",
       "name": "Epiphone",
-      "displayName": "Epiphone"
+      "displayName": "Epiphone",
+      "supported": false
     },
     {
       "id": "rickenbacker",
       "name": "Rickenbacker",
-      "displayName": "Rickenbacker"
+      "displayName": "Rickenbacker",
+      "supported": false
     }
   ]
 }

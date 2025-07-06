@@ -33,6 +33,15 @@ const BrandSerialForm = () => {
 
     if (!formData.brand) {
       newErrors.brand = "Please select a brand";
+    } else {
+      // Check if the selected brand is supported
+      const selectedBrand = brandsData.brands.find(
+        (b) => b.id === formData.brand
+      );
+      if (selectedBrand && !selectedBrand.supported) {
+        newErrors.brand =
+          "This brand is not yet supported. Only Fender is currently available.";
+      }
     }
 
     if (!formData.serialNumber.trim()) {
@@ -76,8 +85,16 @@ const BrandSerialForm = () => {
         >
           <option value="">-- Choose a brand --</option>
           {brandsData.brands.map((brand) => (
-            <option key={brand.id} value={brand.id}>
+            <option
+              key={brand.id}
+              value={brand.id}
+              disabled={!brand.supported}
+              style={
+                !brand.supported ? { color: "#999", fontStyle: "italic" } : {}
+              }
+            >
               {brand.displayName}
+              {!brand.supported ? " (Coming Soon)" : ""}
             </option>
           ))}
         </select>
