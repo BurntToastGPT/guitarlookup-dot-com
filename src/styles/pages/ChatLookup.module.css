@@ -72,13 +72,13 @@
   overflow: hidden; /* Prevent overflow from inner content */
 }
 
-/* Header Bar - glassmorphic styling with three-column layout */
+/* Header Bar - glassmorphic styling with four-column layout */
 .chatHeader {
   background: rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(8px);
   padding: var(--space-6) var(--space-8) var(--space-4);
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto 1fr auto;
   align-items: center;
   position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -114,6 +114,13 @@
   flex-shrink: 0;
   justify-self: end;
   grid-column: 3;
+}
+
+/* Who runs this button section */
+.whoRunsThisSection {
+  flex-shrink: 0;
+  justify-self: end;
+  grid-column: 4;
 }
 
 /* Gold Accent Bar */
@@ -750,6 +757,12 @@
     order: 3;
   }
 
+  .whoRunsThisSection {
+    justify-self: center;
+    grid-column: unset;
+    order: 4;
+  }
+
   .messagesArea {
     padding: var(--space-5) var(--space-6);
   }
@@ -820,6 +833,12 @@
     justify-self: center;
     grid-column: unset;
     order: 3;
+  }
+
+  .whoRunsThisSection {
+    justify-self: center;
+    grid-column: unset;
+    order: 4;
   }
 
   .messagesArea {

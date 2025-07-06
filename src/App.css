@@ -4,3 +4,27 @@
   display: flex;
   flex-direction: column;
 }
+
+.main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding-bottom: 80px; /* Space for persistent footer */
+}
+
+/* Mobile adjustments for footer spacing */
+@media (max-width: 768px) {
+  .main-content {
+    padding-bottom: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding-bottom: 60px;
+  }
+}

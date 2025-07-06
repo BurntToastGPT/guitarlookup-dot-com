@@ -1,0 +1,218 @@
+.content {
+  max-width: 100%;
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-charcoal);
+  margin-bottom: 24px;
+  font-weight: 300;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.fieldWrapper {
+  width: 100%;
+}
+
+.textareaWrapper {
+  width: 100%;
+}
+
+.label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-deep-green);
+  font-size: var(--font-size-lg);
+  font-family: var(--font-family-serif);
+}
+
+.required {
+  color: var(--color-gold);
+  margin-left: var(--space-1);
+}
+
+.textarea {
+  display: block;
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--font-size-lg);
+  line-height: 1.5;
+  color: var(--color-charcoal);
+  background-color: var(--color-ivory);
+  background-clip: padding-box;
+  border: 1px solid rgba(58, 51, 35, 0.1);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  font-family: var(--font-family);
+  box-shadow: var(--shadow-inset), 0 1px 2px rgba(58, 51, 35, 0.05);
+  resize: vertical;
+  min-height: 100px;
+}
+
+.textarea:focus {
+  outline: none;
+  box-shadow: var(--shadow-inset-deep), 0 0 0 3px rgba(226, 194, 117, 0.3);
+  border-color: var(--color-gold);
+}
+
+.textarea:hover:not(:focus) {
+  background-color: rgba(255, 251, 234, 0.8);
+}
+
+.textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
+.textarea.error {
+  border-color: #b91c1c;
+  box-shadow: var(--shadow-inset), 0 0 0 2px rgba(185, 28, 28, 0.2);
+}
+
+.textarea.error:focus {
+  box-shadow: var(--shadow-inset-deep), 0 0 0 3px rgba(185, 28, 28, 0.3);
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--font-size-lg);
+  color: var(--color-charcoal);
+  transition: color var(--transition-base);
+}
+
+.radioLabel:hover {
+  color: var(--color-deep-green);
+}
+
+.radioInput {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-deep-green);
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  margin: 0;
+  appearance: none;
+  background-color: var(--color-ivory);
+  transition: all var(--transition-base);
+}
+
+.radioInput:checked {
+  background-color: var(--color-deep-green);
+}
+
+.radioInput:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-ivory);
+}
+
+.radioInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(226, 194, 117, 0.3);
+}
+
+.radioText {
+  flex: 1;
+}
+
+.helperText,
+.errorText {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-base);
+}
+
+.helperText {
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+.errorText {
+  color: #b91c1c;
+  font-weight: var(--font-weight-medium);
+}
+
+.submitError {
+  padding: var(--space-3);
+  background-color: rgba(185, 28, 28, 0.1);
+  border: 1px solid rgba(185, 28, 28, 0.2);
+  border-radius: var(--radius-md);
+  color: #b91c1c;
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  margin-top: var(--space-6);
+}
+
+.submitButton {
+  min-width: 140px;
+}
+
+.successContent {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+}
+
+.successIcon {
+  font-size: 3rem;
+  color: #10b981;
+  margin-bottom: var(--space-4);
+}
+
+.successMessage {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--color-charcoal);
+  margin: 0;
+  font-weight: 300;
+}
+
+/* Mobile styles */
+@media (max-width: 600px) {
+  .description {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+
+  .buttonContainer {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .submitButton {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}

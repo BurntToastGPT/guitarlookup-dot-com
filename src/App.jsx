@@ -10,6 +10,7 @@ import ChatLookup from "./pages/ChatLookup";
 import Feedback from "./pages/Feedback";
 import ThankYou from "./pages/ThankYou";
 import DevelopmentNotice from "./components/common/DevelopmentNotice";
+import PersistentFooter from "./components/common/PersistentFooter";
 import "./App.css";
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
             <Route path="/thank-you" element={<ThankYou />} />
           </Routes>
         </main>
+        <PersistentFooter />
       </div>
     </Router>
   );
