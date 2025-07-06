@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import ChatMessage from "../components/chat/ChatMessage";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
+import FenderEnhancedResults from "../components/results/FenderEnhancedResults";
 import brandsData from "../data/brands.json";
 import { decodeSerial, decodeGibsonSerial } from "../utils/serialDecoder";
 import {
@@ -35,6 +36,76 @@ const ChatLookup = () => {
   const [shareableUrl, setShareableUrl] = useState(null);
   const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
   const [showJapaneseInfo, setShowJapaneseInfo] = useState(false);
+
+  // Helper function to determine if a Fender serial is supported for enhanced results
+  const isSupportedFenderSerial = (sessionData) => {
+    // Only for Fender guitars
+    if (sessionData.brand !== "fender") {
+      return false;
+    }
+
+    // Get the year from the result
+    const result = sessionData.result;
+    if (!result) return false;
+
+    const year =
+      result.decodedValues?.Year ||
+      result.years ||
+      (Array.isArray(result.years) ? result.years[0] : null);
+
+    const numericYear = typeof year === "string" ? parseInt(year, 10) : year;
+
+    // If we can't determine the year, don't show enhanced results
+    if (!numericYear || isNaN(numericYear)) {
+      return false;
+    }
+
+    // Get the country/location from the result
+    const country =
+      result.decodedValues?.Country || result.country || "Unknown";
+    const location = result.decodedValues?.Location || result.location || "";
+
+    // Check support criteria - check both country and location fields
+    const isMexican =
+      country === "Mexico" ||
+      country === "MX" ||
+      location.includes("Mexico") ||
+      location.includes("Ensenada");
+
+    const isUS =
+      country === "United States" ||
+      country === "USA" ||
+      country === "US" ||
+      location.includes("USA") ||
+      location.includes("Corona") ||
+      location.includes("California");
+
+    const isJapanese =
+      country === "Japan" || country === "JPN" || location.includes("Japan");
+
+    // Japanese serials are not supported
+    if (isJapanese) {
+      return false;
+    }
+
+    // US guitars: year >= 1976
+    if (isUS && numericYear >= 1976) {
+      return true;
+    }
+
+    // Mexico guitars: year >= 1990
+    if (isMexican && numericYear >= 1990) {
+      return true;
+    }
+
+    // If country is unknown but year is reasonable, allow it
+    // (Some older serials might not have country info but are still valid)
+    if (country === "Unknown" && numericYear >= 1976) {
+      return true;
+    }
+
+    return false;
+  };
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -900,6 +971,19 @@ const ChatLookup = () => {
                             >
                               See sources
                             </button>
+                          )}
+
+                        {/* Enhanced Fender Results */}
+                        {sessionData.brand === "fender" &&
+                          isSupportedFenderSerial(sessionData) && (
+                            <FenderEnhancedResults
+                              decodingResult={sessionData.result}
+                              guitarData={{
+                                brand: sessionData.brand,
+                                serialNumber: sessionData.serialNumber,
+                              }}
+                              isSupported={isSupportedFenderSerial(sessionData)}
+                            />
                           )}
                       </div>
                     )}

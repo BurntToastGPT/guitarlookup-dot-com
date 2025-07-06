@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ChatMessage from "../components/chat/ChatMessage";
 import Button from "../components/common/Button";
+import FenderEnhancedResults from "../components/results/FenderEnhancedResults";
 import brandsData from "../data/brands.json";
 import styles from "../styles/pages/Results.module.css";
 
@@ -76,6 +77,80 @@ const Results = () => {
     // Cleanup timer on unmount
     return () => clearTimeout(timer);
   }, [navigate]);
+
+  // Helper function to determine if a Fender serial is supported for enhanced results
+  const isSupportedFenderSerial = (guitarData, decodingResult) => {
+    console.log("Checking Fender support:", { guitarData, decodingResult });
+
+    // Only for Fender guitars
+    if (guitarData.brand !== "fender") {
+      console.log("Not a Fender guitar:", guitarData.brand);
+      return false;
+    }
+
+    // Get the year from the decoding result
+    const year =
+      decodingResult.decodedValues?.Year ||
+      decodingResult.years ||
+      (Array.isArray(decodingResult.years) ? decodingResult.years[0] : null);
+
+    const numericYear = typeof year === "string" ? parseInt(year, 10) : year;
+
+    // If we can't determine the year, don't show enhanced results
+    if (!numericYear || isNaN(numericYear)) {
+      return false;
+    }
+
+    // Get the country/location from the decoding result
+    const country =
+      decodingResult.decodedValues?.Country ||
+      decodingResult.country ||
+      "Unknown";
+
+    const location =
+      decodingResult.decodedValues?.Location || decodingResult.location || "";
+
+    // Check support criteria - check both country and location fields
+    const isMexican =
+      country === "Mexico" ||
+      country === "MX" ||
+      location.includes("Mexico") ||
+      location.includes("Ensenada");
+
+    const isUS =
+      country === "United States" ||
+      country === "USA" ||
+      country === "US" ||
+      location.includes("USA") ||
+      location.includes("Corona") ||
+      location.includes("California");
+
+    const isJapanese =
+      country === "Japan" || country === "JPN" || location.includes("Japan");
+
+    // Japanese serials are not supported
+    if (isJapanese) {
+      return false;
+    }
+
+    // US guitars: year >= 1976
+    if (isUS && numericYear >= 1976) {
+      return true;
+    }
+
+    // Mexico guitars: year >= 1990
+    if (isMexican && numericYear >= 1990) {
+      return true;
+    }
+
+    // If country is unknown but year is reasonable, allow it
+    // (Some older serials might not have country info but are still valid)
+    if (country === "Unknown" && numericYear >= 1976) {
+      return true;
+    }
+
+    return false;
+  };
 
   const handleFeedback = () => {
     navigate("/feedback");
@@ -216,6 +291,19 @@ const Results = () => {
                       )}
                     </>
                   )}
+
+                  {/* Enhanced Fender Results */}
+                  {guitarData.brand === "fender" &&
+                    isSupportedFenderSerial(guitarData, decodingResult) && (
+                      <FenderEnhancedResults
+                        decodingResult={decodingResult}
+                        guitarData={guitarData}
+                        isSupported={isSupportedFenderSerial(
+                          guitarData,
+                          decodingResult
+                        )}
+                      />
+                    )}
 
                   <div className={styles.resultItem}>
                     <span className={styles.label}>🎯 Confidence:</span>
