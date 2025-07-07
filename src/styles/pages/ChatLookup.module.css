@@ -102,6 +102,16 @@
   grid-column: 2;
 }
 
+.logoImage {
+  height: 90px;
+  width: auto;
+  max-width: 450px;
+  flex-shrink: 0;
+  justify-self: center;
+  grid-column: 2;
+  filter: sepia(1) saturate(2) hue-rotate(75deg) brightness(0.8);
+}
+
 /* Brands ticker section on the left */
 .brandsTickerSection {
   flex-shrink: 0;
@@ -745,6 +755,13 @@
     order: 1;
   }
 
+  .logoImage {
+    height: 75px;
+    max-width: 375px;
+    grid-column: unset;
+    order: 1;
+  }
+
   .brandsTickerSection {
     justify-self: center;
     grid-column: unset;
@@ -819,6 +836,13 @@
 
   .logoText {
     font-size: var(--font-size-2xl);
+    grid-column: unset;
+    order: 1;
+  }
+
+  .logoImage {
+    height: 60px;
+    max-width: 300px;
     grid-column: unset;
     order: 1;
   }

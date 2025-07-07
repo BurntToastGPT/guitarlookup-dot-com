@@ -710,7 +710,11 @@ const ChatLookup = () => {
             <div className={styles.brandsTickerSection}>
               <BrandsTicker />
             </div>
-            <h1 className={styles.logoText}>GuitarLookup</h1>
+            <img
+              src="/assets/GuitarLookup_v1.png"
+              alt="GuitarLookup"
+              className={styles.logoImage}
+            />
             <div className={styles.guitarTickerSection}>
               <SplitFlapTicker />
             </div>
